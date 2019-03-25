@@ -63,6 +63,7 @@ func (deck *Deck) Draw() Card {
 	for _, name := range CardNames() {
 		thisCount := deck.CountFor(name)
 		if draw < thisCount {
+			map[Card]int(*deck)[name] -= 1 // Or maybe this is even more unreadable
 			return name
 		} else {
 			draw -= thisCount
