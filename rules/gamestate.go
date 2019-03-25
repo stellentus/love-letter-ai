@@ -119,6 +119,7 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		if targetCard == selectedCard && targetCard != Guard {
 			state.Win(true)
 		}
+		// Note we don't store this history, which a real player would rely upon. e.g. if I guess 4 and it's wrong, do I guess 4 again the next turn when no Handmaids have shown up? This bot would do that.
 	case Priest:
 		if !(targetPlayer >= 0 && targetPlayer <= 1 && targetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
@@ -126,8 +127,8 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		if state.TopCardForPlayer(targetPlayer) == Handmaid {
 			break
 		}
-		// Oh my
-		panic("Not implemented")
+		// TODO: Store this knowledge, keeping track of whether the other player still has the observed card.
+		// TODO: Also store whether the other player has seen my current card.
 	case Baron:
 		if !(targetPlayer >= 0 && targetPlayer <= 1 && targetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
