@@ -26,6 +26,9 @@ type Gamestate struct {
 	// ActivePlayer is the id of the active player.
 	ActivePlayer int
 
+	// EliminatedPlayers is true if a given player has been eliminated.
+	EliminatedPlayers []bool
+
 	// CardInHand contains the single card in each player's hand. (Only the active player has a second card, which is separate below.)
 	// This is NOT public information.
 	CardInHand Stack
@@ -74,21 +77,24 @@ func NewGame(playerCount int) (Gamestate, error) {
 	return state, nil
 }
 
-func (state *Gamestate) ActiveCardIsHighest() bool {
-	return int(state.ActivePlayerCard) > int(state.CardInHand[state.ActivePlayer])
-}
-
-func (state *Gamestate) Win(activeWins bool) {
-	if activeWins {
-		state.Winner = state.ActivePlayer
-	} else {
-		if state.ActivePlayer == 0 {
-			state.Winner = 1
-		} else {
-			state.Winner = 0
+func (state *Gamestate) EliminatePlayer(player int) {
+	state.EliminatedPlayers[player] = true
+	pInGame := 0
+	remainingPlayer := 0
+	for pid, isIn := range state.EliminatedPlayers {
+		if isIn {
+			pInGame += 1
+			remainingPlayer = pid
 		}
 	}
-	state.GameEnded = true
+	if pInGame == 1 {
+		state.Winner = remainingPlayer
+		state.GameEnded = true
+	}
+}
+
+func (state *Gamestate) ActiveCardIsHighest() bool {
+	return int(state.ActivePlayerCard) > int(state.CardInHand[state.ActivePlayer])
 }
 
 func (state *Gamestate) TopCardForPlayer(player int) Card {
@@ -119,8 +125,8 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 	// If the retained card is the Countess, make sure that's allowed
 	if state.CardInHand[state.ActivePlayer] == Countess {
 		if state.ActivePlayerCard == King || state.ActivePlayerCard == Prince {
-			// Automatically lose for cheating
-			state.Win(false)
+			// Automatically eliminated for cheating
+			state.EliminatePlayer(state.ActivePlayer)
 			return nil
 		}
 	}
@@ -137,7 +143,7 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		}
 		targetCard := state.CardInHand[targetPlayer]
 		if targetCard == selectedCard && targetCard != Guard {
-			state.Win(true)
+			state.EliminatePlayer(targetPlayer)
 		}
 		// Note we don't store this history, which a real player would rely upon. e.g. if I guess 4 and it's wrong, do I guess 4 again the next turn when no Handmaids have shown up? This bot would do that.
 	case Priest:
@@ -160,9 +166,9 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		activeValue := int(state.CardInHand[state.ActivePlayer])
 		switch {
 		case targetValue < activeValue:
-			state.Win(true)
+			state.EliminatePlayer(targetPlayer)
 		case targetValue > activeValue:
-			state.Win(false)
+			state.EliminatePlayer(state.ActivePlayer)
 		}
 	case Handmaid:
 		// Do nothing
@@ -179,7 +185,7 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		state.CardInHand[targetPlayer] = state.Deck.Draw()
 
 		if targetCard == Princess {
-			state.Win(targetPlayer != state.ActivePlayer)
+			state.EliminatePlayer(targetPlayer)
 		}
 	case King:
 		if !(targetPlayer >= 0 && targetPlayer <= 1) {
@@ -208,7 +214,7 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		// Do nothing
 	case Princess:
 		// Idiot!
-		state.Win(false)
+		state.EliminatePlayer(state.ActivePlayer)
 	default:
 		return errors.New("An invalid card was played")
 	}
