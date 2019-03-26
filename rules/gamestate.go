@@ -128,6 +128,7 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 	}
 
 	state.ClearKnownCard(state.ActivePlayer, state.ActivePlayerCard)
+	state.PlayerHistory[state.ActivePlayer] = append(state.PlayerHistory[state.ActivePlayer], state.ActivePlayerCard)
 
 	switch state.ActivePlayerCard {
 	case Guard:
