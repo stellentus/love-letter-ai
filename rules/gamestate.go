@@ -180,7 +180,9 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 			return errors.New("You must target a valid player")
 		}
 		if state.TopCardForPlayer(targetPlayer) == Handmaid {
-			break
+			// If you target someone invalid, default to self.
+			// The game rules say that if everyone else has a Handmaid, you must target yourself, so this is a good default.
+			targetPlayer = state.ActivePlayer
 		}
 		targetCard := state.CardInHand[targetPlayer]
 		state.ClearKnownCard(targetPlayer, targetCard)
