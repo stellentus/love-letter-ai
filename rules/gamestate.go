@@ -272,3 +272,28 @@ func (state *Gamestate) triggerGameEnd() error {
 
 	return nil
 }
+
+// SimpleState provides a simplified state. It is only valid for 2 players.
+func (state *Gamestate) SimpleState() (discards Deck, highCard, lowCard, opponentCard Card, scoreDiff int) {
+	discards = state.Faceup.AsDeck()
+	for _, val := range state.PlayerHistory {
+		discards.AddStack(val)
+	}
+	if state.ActiveCardIsHighest() {
+		highCard = state.ActivePlayerCard
+		lowCard = state.CardInHand[state.ActivePlayer]
+	} else {
+		lowCard = state.ActivePlayerCard
+		highCard = state.CardInHand[state.ActivePlayer]
+	}
+
+	if state.ActivePlayer == 0 {
+		opponentCard = state.CardInHand[1]
+		scoreDiff = state.PlayerHistory[0].Score() - state.PlayerHistory[1].Score()
+	} else {
+		opponentCard = state.CardInHand[0]
+		scoreDiff = state.PlayerHistory[1].Score() - state.PlayerHistory[0].Score()
+	}
+
+	return
+}
