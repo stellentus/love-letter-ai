@@ -4,6 +4,9 @@ import "math/rand"
 
 type Card int
 
+// Stack is an ordered stack of cards.
+type Stack []Card
+
 // For now, the Card value is its face value.
 const (
 	None = Card(iota) // Used to indicate errors or other things

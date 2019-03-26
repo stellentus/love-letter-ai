@@ -4,9 +4,6 @@ import (
 	"errors"
 )
 
-// Stack is an ordered stack of cards.
-type Stack []Card
-
 type Gamestate struct {
 	// Deck includes all remaining cards.
 	// Note this includes the one card that is always dealt face-down in a real game, so here a game should end with one card in this deck.
