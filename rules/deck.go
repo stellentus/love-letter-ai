@@ -74,3 +74,28 @@ func (deck *Deck) Draw() Card {
 	}
 	return None
 }
+
+func (deck *Deck) AddStack(stack Stack) {
+	for _, card := range stack {
+		map[Card]int(*deck)[card] += 1
+	}
+}
+
+func (stack Stack) AsDeck() Deck {
+	deck := map[Card]int{}
+	for _, name := range CardNames() {
+		deck[name] = 0
+	}
+	for _, card := range stack {
+		deck[card] += 1
+	}
+	return deck
+}
+
+func (stack Stack) Score() int {
+	sum := 0
+	for _, card := range stack {
+		sum += int(card)
+	}
+	return sum
+}
