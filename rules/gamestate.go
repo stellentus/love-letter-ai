@@ -75,6 +75,12 @@ func NewGame(playerCount int) (Gamestate, error) {
 
 func (state *Gamestate) EliminatePlayer(player int) {
 	state.EliminatedPlayers[player] = true
+	state.PlayerHistory[state.ActivePlayer] = append(state.PlayerHistory[state.ActivePlayer], state.CardInHand[player])
+	state.CardInHand[player] = None
+	for i := range state.KnownCards[player] {
+		state.KnownCards[player][i] = None
+	}
+
 	pInGame := 0
 	remainingPlayer := 0
 	for pid, isIn := range state.EliminatedPlayers {
