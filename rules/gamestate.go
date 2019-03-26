@@ -224,8 +224,9 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 }
 
 func (state *Gamestate) triggerGameEnd() error {
-	if state.Deck.Size() != 1 {
-		return errors.New("The deck size is incorrect for game end")
+	if state.Deck.Size() >= 1 {
+		// The deck could be size 0 if a prince was played in the last round.
+		return errors.New("The deck is too big")
 	}
 
 	tie := false
