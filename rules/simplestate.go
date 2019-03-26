@@ -39,7 +39,10 @@ func (state *Gamestate) AsSimpleState() SimpleState {
 	if state.ActivePlayer == 0 {
 		opponent = 1
 	}
-	simple.opponentCard = state.CardInHand[opponent]
+	if len(state.PlayerHistory[opponent]) > 0 {
+		// Get opponent's last played card. (Note if the opponent played the Prince, then this will show the discarded card, instead.)
+		simple.opponentCard = state.PlayerHistory[opponent][len(state.PlayerHistory[opponent])-1]
+	} // else default to None
 	simple.scoreDiff = state.PlayerHistory[state.ActivePlayer].Score() - state.PlayerHistory[opponent].Score()
 
 	return simple
