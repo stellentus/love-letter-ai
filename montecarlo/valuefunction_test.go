@@ -3,7 +3,8 @@ package montecarlo
 import (
 	"testing"
 
-	"bellstone.ca/go/love-letter-ai/rules"
+	"love-letter-ai/rules"
+
 	"github.com/stretchr/testify/assert"
 )
 

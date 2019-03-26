@@ -1,6 +1,6 @@
 package montecarlo
 
-import "bellstone.ca/go/love-letter-ai/rules"
+import "love-letter-ai/rules"
 
 const (
 	// StateSpaceMagnitude represents the number of possible states considered.
