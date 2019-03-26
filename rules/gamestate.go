@@ -127,7 +127,7 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 	// If the retained card is the Countess, make sure that's allowed
 	if state.CardInHand[state.ActivePlayer] == Countess {
 		if state.ActivePlayerCard == King || state.ActivePlayerCard == Prince {
-			// Automatically eliminated for cheating
+			// Automatically eliminated for cheating. This is not the same as the rules, which simply forbid this.
 			state.EliminatePlayer(state.ActivePlayer)
 			return nil
 		}
