@@ -34,13 +34,13 @@ func (state *Gamestate) AsSimpleState() SimpleState {
 		simple.highCard = state.CardInHand[state.ActivePlayer]
 	}
 
+	// Figure out opponent's ID
+	opponent := 0
 	if state.ActivePlayer == 0 {
-		simple.opponentCard = state.CardInHand[1]
-		simple.scoreDiff = state.PlayerHistory[0].Score() - state.PlayerHistory[1].Score()
-	} else {
-		simple.opponentCard = state.CardInHand[0]
-		simple.scoreDiff = state.PlayerHistory[1].Score() - state.PlayerHistory[0].Score()
+		opponent = 1
 	}
+	simple.opponentCard = state.CardInHand[opponent]
+	simple.scoreDiff = state.PlayerHistory[state.ActivePlayer].Score() - state.PlayerHistory[opponent].Score()
 
 	return simple
 }
