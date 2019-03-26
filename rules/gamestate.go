@@ -18,6 +18,11 @@ type Gamestate struct {
 	// PlayerHistory contains a Stack for each player, showing their face-up cards.
 	PlayerHistory []Stack
 
+	// KnownCards contains a Stack for each player, with a Stack of their knowledge of opponents' cards.
+	// Index first by player about whom you want to know, then by the index of the player who might know something.
+	// A card of 'None' means no knowledge.
+	KnownCards []Stack
+
 	// ActivePlayer is the id of the active player.
 	ActivePlayer int
 
@@ -44,6 +49,7 @@ func NewGame(playerCount int) (Gamestate, error) {
 		PlayerHistory:    make([]Stack, playerCount),
 		ActivePlayer:     0,
 		CardInHand:       make([]Card, playerCount),
+		KnownCards:       make([]Stack, playerCount),
 		ActivePlayerCard: None,
 	}
 
@@ -59,6 +65,9 @@ func NewGame(playerCount int) (Gamestate, error) {
 
 	for i := range state.CardInHand {
 		state.CardInHand[i] = state.Deck.Draw()
+	}
+	for i := range state.KnownCards {
+		state.KnownCards[i] = make([]Card, playerCount)
 	}
 	state.ActivePlayerCard = state.Deck.Draw()
 
@@ -86,6 +95,15 @@ func (state *Gamestate) TopCardForPlayer(player int) Card {
 	return state.PlayerHistory[player][len(state.PlayerHistory[player])-1]
 }
 
+func (state *Gamestate) ClearKnownCard(player int, card Card) {
+	// Range through the list of my known cards to reset it if I discard the known card
+	for i, val := range state.KnownCards[player] {
+		if card == val {
+			state.KnownCards[player][i] = None
+		}
+	}
+}
+
 func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCard Card) error {
 	if state.GameEnded {
 		return errors.New("The game has already ended")
@@ -107,6 +125,8 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		}
 	}
 
+	state.ClearKnownCard(state.ActivePlayer, state.ActivePlayerCard)
+
 	switch state.ActivePlayerCard {
 	case Guard:
 		if !(targetPlayer >= 0 && targetPlayer <= 1 && targetPlayer != state.ActivePlayer) {
@@ -127,8 +147,7 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		if state.TopCardForPlayer(targetPlayer) == Handmaid {
 			break
 		}
-		// TODO: Store this knowledge, keeping track of whether the other player still has the observed card.
-		// TODO: Also store whether the other player has seen my current card.
+		state.KnownCards[targetPlayer][state.ActivePlayer] = state.CardInHand[targetPlayer]
 	case Baron:
 		if !(targetPlayer >= 0 && targetPlayer <= 1 && targetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
@@ -136,7 +155,7 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		if state.TopCardForPlayer(targetPlayer) == Handmaid {
 			break
 		}
-		// Compare cards. High wins. Tie does nothing
+		// Compare cards. Eliminate low. Tie does nothing
 		targetValue := int(state.CardInHand[targetPlayer])
 		activeValue := int(state.CardInHand[state.ActivePlayer])
 		switch {
@@ -155,6 +174,7 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 			break
 		}
 		targetCard := state.CardInHand[targetPlayer]
+		state.ClearKnownCard(targetPlayer, targetCard)
 		state.PlayerHistory[targetPlayer] = append(state.PlayerHistory[targetPlayer], targetCard)
 		state.CardInHand[targetPlayer] = state.Deck.Draw()
 
@@ -170,8 +190,20 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 		}
 		// Trade hands
 		targetCard := state.CardInHand[targetPlayer]
-		state.CardInHand[targetPlayer] = state.CardInHand[state.ActivePlayer]
+		activeCard := state.CardInHand[state.ActivePlayer]
+		state.CardInHand[targetPlayer] = activeCard
 		state.CardInHand[state.ActivePlayer] = targetCard
+		// Update knowledge
+		for i := range state.KnownCards[state.ActivePlayer] {
+			if activeCard == state.KnownCards[state.ActivePlayer][i] {
+				state.KnownCards[state.ActivePlayer][i] = targetCard
+			}
+			if targetCard == state.KnownCards[targetPlayer][i] {
+				state.KnownCards[targetPlayer][i] = activeCard
+			}
+		}
+		state.KnownCards[state.ActivePlayer][targetPlayer] = targetCard
+		state.KnownCards[targetPlayer][state.ActivePlayer] = activeCard
 	case Countess:
 		// Do nothing
 	case Princess:
