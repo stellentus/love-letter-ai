@@ -56,14 +56,13 @@ func NewGame(playerCount int) (Gamestate, error) {
 		ActivePlayerCard: None,
 	}
 
-	switch playerCount {
-	case 2:
+	if playerCount == 2 {
 		// Draw 3 cards face up
 		for i := 0; i < 3; i++ {
 			state.Faceup = append(state.Faceup, state.Deck.Draw())
 		}
-	default:
-		return Gamestate{}, errors.New("Only 2-player games are supported")
+	} else if playerCount != 3 && playerCount != 4 {
+		return Gamestate{}, errors.New("Only games with 2, 3, or 4 players are supported")
 	}
 
 	for i := range state.CardInHand {
