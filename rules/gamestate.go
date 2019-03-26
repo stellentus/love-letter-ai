@@ -112,13 +112,13 @@ func (state *Gamestate) ClearKnownCard(player int, card Card) {
 	}
 }
 
-func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCard Card) error {
+func (state *Gamestate) PlayCard(action Action) error {
 	if state.GameEnded {
 		return errors.New("The game has already ended")
 	}
 
 	// If the card to be played isn't the "active" card, swap them to make the rest of this function easier
-	if state.ActiveCardIsHighest() != playHighest {
+	if state.ActiveCardIsHighest() != action.PlayHighest {
 		card := state.ActivePlayerCard
 		state.ActivePlayerCard = state.CardInHand[state.ActivePlayer]
 		state.CardInHand[state.ActivePlayer] = card
@@ -138,83 +138,83 @@ func (state *Gamestate) PlayCard(playHighest bool, targetPlayer int, selectedCar
 
 	switch state.ActivePlayerCard {
 	case Guard:
-		if !(targetPlayer >= 0 && targetPlayer <= 1 && targetPlayer != state.ActivePlayer) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1 && action.TargetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(targetPlayer) == Handmaid {
+		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
 			break
 		}
-		targetCard := state.CardInHand[targetPlayer]
-		if targetCard == selectedCard && targetCard != Guard {
-			state.EliminatePlayer(targetPlayer)
+		targetCard := state.CardInHand[action.TargetPlayer]
+		if targetCard == action.SelectedCard && targetCard != Guard {
+			state.EliminatePlayer(action.TargetPlayer)
 		}
 		// Note we don't store this history, which a real player would rely upon. e.g. if I guess 4 and it's wrong, do I guess 4 again the next turn when no Handmaids have shown up? This bot would do that.
 	case Priest:
-		if !(targetPlayer >= 0 && targetPlayer <= 1 && targetPlayer != state.ActivePlayer) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1 && action.TargetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(targetPlayer) == Handmaid {
+		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
 			break
 		}
-		state.KnownCards[targetPlayer][state.ActivePlayer] = state.CardInHand[targetPlayer]
+		state.KnownCards[action.TargetPlayer][state.ActivePlayer] = state.CardInHand[action.TargetPlayer]
 	case Baron:
-		if !(targetPlayer >= 0 && targetPlayer <= 1 && targetPlayer != state.ActivePlayer) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1 && action.TargetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(targetPlayer) == Handmaid {
+		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
 			break
 		}
 		// Compare cards. Eliminate low. Tie does nothing
-		targetValue := int(state.CardInHand[targetPlayer])
+		targetValue := int(state.CardInHand[action.TargetPlayer])
 		activeValue := int(state.CardInHand[state.ActivePlayer])
 		switch {
 		case targetValue < activeValue:
-			state.EliminatePlayer(targetPlayer)
+			state.EliminatePlayer(action.TargetPlayer)
 		case targetValue > activeValue:
 			state.EliminatePlayer(state.ActivePlayer)
 		}
 	case Handmaid:
 		// Do nothing
 	case Prince:
-		if !(targetPlayer >= 0 && targetPlayer <= 1) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(targetPlayer) == Handmaid {
+		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
 			// If you target someone invalid, default to self.
 			// The game rules say that if everyone else has a Handmaid, you must target yourself, so this is a good default.
-			targetPlayer = state.ActivePlayer
+			action.TargetPlayer = state.ActivePlayer
 		}
-		targetCard := state.CardInHand[targetPlayer]
-		state.ClearKnownCard(targetPlayer, targetCard)
-		state.PlayerHistory[targetPlayer] = append(state.PlayerHistory[targetPlayer], targetCard)
-		state.CardInHand[targetPlayer] = state.Deck.Draw()
+		targetCard := state.CardInHand[action.TargetPlayer]
+		state.ClearKnownCard(action.TargetPlayer, targetCard)
+		state.PlayerHistory[action.TargetPlayer] = append(state.PlayerHistory[action.TargetPlayer], targetCard)
+		state.CardInHand[action.TargetPlayer] = state.Deck.Draw()
 
 		if targetCard == Princess {
-			state.EliminatePlayer(targetPlayer)
+			state.EliminatePlayer(action.TargetPlayer)
 		}
 	case King:
-		if !(targetPlayer >= 0 && targetPlayer <= 1) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(targetPlayer) == Handmaid {
+		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
 			break
 		}
 		// Trade hands
-		targetCard := state.CardInHand[targetPlayer]
+		targetCard := state.CardInHand[action.TargetPlayer]
 		activeCard := state.CardInHand[state.ActivePlayer]
-		state.CardInHand[targetPlayer] = activeCard
+		state.CardInHand[action.TargetPlayer] = activeCard
 		state.CardInHand[state.ActivePlayer] = targetCard
 		// Update knowledge
 		for i := range state.KnownCards[state.ActivePlayer] {
 			if activeCard == state.KnownCards[state.ActivePlayer][i] {
 				state.KnownCards[state.ActivePlayer][i] = targetCard
 			}
-			if targetCard == state.KnownCards[targetPlayer][i] {
-				state.KnownCards[targetPlayer][i] = activeCard
+			if targetCard == state.KnownCards[action.TargetPlayer][i] {
+				state.KnownCards[action.TargetPlayer][i] = activeCard
 			}
 		}
-		state.KnownCards[state.ActivePlayer][targetPlayer] = targetCard
-		state.KnownCards[targetPlayer][state.ActivePlayer] = activeCard
+		state.KnownCards[state.ActivePlayer][action.TargetPlayer] = targetCard
+		state.KnownCards[action.TargetPlayer][state.ActivePlayer] = activeCard
 	case Countess:
 		// Do nothing
 	case Princess:
