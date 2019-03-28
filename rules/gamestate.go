@@ -65,9 +65,6 @@ func NewGame(playerCount int) (Gamestate, error) {
 	for i := range state.CardInHand {
 		state.CardInHand[i] = state.Deck.Draw()
 	}
-	for i := range state.KnownCards {
-		state.KnownCards[i] = make([]Card, playerCount)
-	}
 	state.ActivePlayerCard = state.Deck.Draw()
 
 	return state, nil
@@ -80,8 +77,6 @@ func NewGame(playerCount int) (Gamestate, error) {
 //	* 1 for player 1's hand
 //	* 1 for player 1's last play
 func NewSimpleGame(deck Deck) Gamestate {
-	playerCount := 2
-
 	state := newGame(deck, 2)
 
 	state.LastPlay[1] = state.Deck.Draw()
@@ -89,16 +84,13 @@ func NewSimpleGame(deck Deck) Gamestate {
 	for i := range state.CardInHand {
 		state.CardInHand[i] = state.Deck.Draw()
 	}
-	for i := range state.KnownCards {
-		state.KnownCards[i] = make([]Card, playerCount)
-	}
 	state.ActivePlayerCard = state.Deck.Draw()
 
 	return state
 }
 
 func newGame(deck Deck, playerCount int) Gamestate {
-	return Gamestate{
+	state := Gamestate{
 		NumPlayers:        playerCount,
 		Deck:              deck,
 		Faceup:            []Card{},
@@ -112,6 +104,10 @@ func newGame(deck Deck, playerCount int) Gamestate {
 		GameEnded:         false,
 		Winner:            -1,
 	}
+	for i := range state.KnownCards {
+		state.KnownCards[i] = make([]Card, playerCount)
+	}
+	return state
 }
 
 func (state *Gamestate) AllDiscards() Deck {
