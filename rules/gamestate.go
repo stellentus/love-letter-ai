@@ -96,14 +96,15 @@ func NewSimpleGame(deck Deck) Gamestate {
 
 func newGame(deck Deck, playerCount int) Gamestate {
 	return Gamestate{
-		Deck:             deck,
-		Discards:         make([]Stack, playerCount),
-		ActivePlayer:     0,
-		CardInHand:       make([]Card, playerCount),
-		LastPlay:         make([]Card, playerCount),
-		KnownCards:       make([]Stack, playerCount),
-		ActivePlayerCard: None,
-		Faceup:           []Card{},
+		Deck:              deck,
+		Discards:          make([]Stack, playerCount),
+		ActivePlayer:      0,
+		CardInHand:        make([]Card, playerCount),
+		LastPlay:          make([]Card, playerCount),
+		KnownCards:        make([]Stack, playerCount),
+		EliminatedPlayers: make([]bool, playerCount),
+		ActivePlayerCard:  None,
+		Faceup:            []Card{},
 	}
 }
 
