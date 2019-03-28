@@ -56,7 +56,7 @@ func (master *Gamemaster) PlaySeries(gamesToWin int) (int, error) {
 		if err != nil {
 			return 0, err
 		}
-		winner := (master.Winner - master.startPlayerOffset) % master.NumPlayers
+		winner := (master.Winner - master.startPlayerOffset + master.NumPlayers) % master.NumPlayers
 		master.Wins[winner] += 1
 		master.startPlayerOffset = winner
 		master.Gamestate, err = rules.NewGame(master.NumPlayers)
