@@ -30,6 +30,11 @@ func (rp *RandomPlayer) PlayCard(state rules.SimpleState, myID int) rules.Action
 		otherPlayer = 1
 	}
 
+	if playedCard == rules.Princess {
+		action.PlayRecent = !action.PlayRecent
+		otherCard, playedCard = playedCard, otherCard
+	}
+
 	switch playedCard {
 	case rules.Guard:
 		action.TargetPlayer = otherPlayer
@@ -45,9 +50,6 @@ func (rp *RandomPlayer) PlayCard(state rules.SimpleState, myID int) rules.Action
 			// Nope, must play Countess
 			action.PlayRecent = !action.PlayRecent
 		}
-	case rules.Princess:
-		// No, that's dumb
-		action.PlayRecent = !action.PlayRecent
 	default:
 		// This is an error
 	}
