@@ -128,8 +128,8 @@ func (state *Gamestate) eliminatePlayer(player int) {
 
 	pInGame := 0
 	remainingPlayer := 0
-	for pid, isIn := range state.EliminatedPlayers {
-		if isIn {
+	for pid, isElim := range state.EliminatedPlayers {
+		if !isElim {
 			pInGame += 1
 			remainingPlayer = pid
 		}
