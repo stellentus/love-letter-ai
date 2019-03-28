@@ -109,6 +109,14 @@ func NewSimpleGame(deck Deck) Gamestate {
 	return state
 }
 
+func (state *Gamestate) AllDiscards() Deck {
+	discards := state.Faceup.AsDeck()
+	for _, val := range state.Discards {
+		discards.AddStack(val)
+	}
+	return discards
+}
+
 func (state *Gamestate) eliminatePlayer(player int) {
 	state.EliminatedPlayers[player] = true
 	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.CardInHand[player])

@@ -22,10 +22,7 @@ type SimpleState struct {
 func (state *Gamestate) AsSimpleState() SimpleState {
 	simple := SimpleState{}
 
-	simple.Discards = state.Faceup.AsDeck()
-	for _, val := range state.Discards {
-		simple.Discards.AddStack(val)
-	}
+	simple.Discards = state.AllDiscards()
 	simple.RecentDraw = state.ActivePlayerCard
 	simple.OldCard = state.CardInHand[state.ActivePlayer]
 
