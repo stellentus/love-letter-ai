@@ -48,15 +48,7 @@ type Gamestate struct {
 // NewGame deals out a new game for the specified number of players.
 // This always assumes that player 0 is the starting player.
 func NewGame(playerCount int) (Gamestate, error) {
-	state := Gamestate{
-		Deck:             DefaultDeck(),
-		Discards:         make([]Stack, playerCount),
-		ActivePlayer:     0,
-		CardInHand:       make([]Card, playerCount),
-		LastPlay:         make([]Card, playerCount),
-		KnownCards:       make([]Stack, playerCount),
-		ActivePlayerCard: None,
-	}
+	state := newGame(DefaultDeck(), playerCount)
 
 	if playerCount == 2 {
 		// Draw 3 cards face up
@@ -87,16 +79,7 @@ func NewGame(playerCount int) (Gamestate, error) {
 func NewSimpleGame(deck Deck) Gamestate {
 	playerCount := 2
 
-	state := Gamestate{
-		Deck:             deck,
-		Discards:         make([]Stack, playerCount),
-		ActivePlayer:     0,
-		CardInHand:       make([]Card, playerCount),
-		LastPlay:         make([]Card, playerCount),
-		KnownCards:       make([]Stack, playerCount),
-		ActivePlayerCard: None,
-		Faceup:           []Card{},
-	}
+	state := newGame(deck, 2)
 
 	state.LastPlay[1] = state.Deck.Draw()
 
@@ -109,6 +92,19 @@ func NewSimpleGame(deck Deck) Gamestate {
 	state.ActivePlayerCard = state.Deck.Draw()
 
 	return state
+}
+
+func newGame(deck Deck, playerCount int) Gamestate {
+	return Gamestate{
+		Deck:             deck,
+		Discards:         make([]Stack, playerCount),
+		ActivePlayer:     0,
+		CardInHand:       make([]Card, playerCount),
+		LastPlay:         make([]Card, playerCount),
+		KnownCards:       make([]Stack, playerCount),
+		ActivePlayerCard: None,
+		Faceup:           []Card{},
+	}
 }
 
 func (state *Gamestate) AllDiscards() Deck {
