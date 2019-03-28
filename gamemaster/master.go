@@ -11,6 +11,12 @@ type Gamemaster struct {
 
 	// Gamestate tracks the state of the game
 	rules.Gamestate
+
+	// Wins tracks each player's wins so far
+	Wins []int
+
+	// startPlayerOffset is the id of the player who started the current game
+	startPlayerOffset int
 }
 
 func New(players []players.Player) (Gamemaster, error) {
@@ -18,6 +24,7 @@ func New(players []players.Player) (Gamemaster, error) {
 	return Gamemaster{
 		Players:   players,
 		Gamestate: state,
+		Wins:      make([]int, len(players)),
 	}, err
 }
 
@@ -32,5 +39,37 @@ func (master *Gamemaster) PlayGame() error {
 			return err
 		}
 	}
+	master.Wins[master.Winner] += 1
 	return nil
+}
+
+// PlaySeries playes an entire series with the provided players, returning the id of the player who won.
+// A player wins after winning gamesToWin games.
+func (master *Gamemaster) PlaySeries(gamesToWin int) (int, error) {
+	for {
+		pid, score, tie := master.HighScore()
+		if score >= gamesToWin && !tie {
+			return pid, nil
+		}
+		if err := master.PlayGame(); err != nil {
+			return 0, err
+		}
+	}
+}
+
+// HighScore returns the player who scored highest and that player's score.
+// It also returns a bool to indicate if there's a tie. There isn't currently any way to tie.
+func (master *Gamemaster) HighScore() (int, int, bool) {
+	maxPid := -1
+	maxScore := 0
+	tie := false
+	for pid, score := range master.Wins {
+		if score > maxScore {
+			maxPid = pid
+			maxScore = score
+		} else if score == maxScore {
+			tie = true
+		}
+	}
+	return maxPid, maxScore, tie
 }
