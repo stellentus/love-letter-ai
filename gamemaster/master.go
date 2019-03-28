@@ -6,7 +6,10 @@ import (
 )
 
 type Gamemaster struct {
+	// Players is a list of the players in the current game
 	Players []players.Player
+
+	// Gamestate tracks the state of the game
 	rules.Gamestate
 }
 
