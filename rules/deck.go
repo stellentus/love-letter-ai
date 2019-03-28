@@ -18,10 +18,11 @@ const (
 	King
 	Countess
 	Princess
+	numberOfCards
 )
 
-// Deck contains Cards with an integer count
-type Deck map[Card]int
+// Deck contains counts of Cards
+type Deck [numberOfCards]int
 
 func DefaultDeck() Deck {
 	return Deck{
@@ -57,19 +58,15 @@ func (deck Deck) Size() int {
 	return sum
 }
 
-func (deck Deck) CountFor(card Card) int {
-	return map[Card]int(deck)[card] // Possibly the most unreadable line of go I've ever written :)
-}
-
 func (deck *Deck) Draw() Card {
 	draw := int(rand.Int31n(int32(deck.Size())))
-	for _, name := range CardNames() {
-		thisCount := deck.CountFor(name)
-		if draw < thisCount {
-			map[Card]int(*deck)[name] -= 1 // Or maybe this is even more unreadable
-			return name
+	for name, count := range deck {
+		if draw < count {
+			deck[name] -= 1
+			// map[Card]int(*deck)[name] -= 1 // Or maybe this is even more unreadable
+			return Card(name)
 		} else {
-			draw -= thisCount
+			draw -= count
 		}
 	}
 	return None
@@ -77,15 +74,12 @@ func (deck *Deck) Draw() Card {
 
 func (deck *Deck) AddStack(stack Stack) {
 	for _, card := range stack {
-		map[Card]int(*deck)[card] += 1
+		deck[card] += 1
 	}
 }
 
 func (stack Stack) AsDeck() Deck {
-	deck := map[Card]int{}
-	for _, name := range CardNames() {
-		deck[name] = 0
-	}
+	deck := Deck{}
 	for _, card := range stack {
 		deck[card] += 1
 	}
