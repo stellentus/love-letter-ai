@@ -237,3 +237,51 @@ func TestPlayingBaronWithPriestVsKing(t *testing.T) {
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 1, state.Winner)
 }
+
+func TestAlmostEmptyDeck(t *testing.T) {
+	rand.Seed(0)
+	state := newGame(Deck{
+		Priest: 1,
+		Prince: 1,
+	}, 2)
+
+	state.CardInHand[0] = Prince
+	state.CardInHand[1] = Princess
+	state.ActivePlayerCard = Guard
+	state.ActivePlayer = 1
+
+	err := state.PlayCard(Action{
+		PlayRecent:   true,
+		TargetPlayer: 0,
+		SelectedCard: Handmaid,
+	})
+	assert.NoError(t, err)
+
+	assert.False(t, state.GameEnded)
+	assert.Equal(t, 0, state.ActivePlayer)          // It's the next player's turn
+	assert.Equal(t, Princess, state.CardInHand[1])  // The other player still has the Princess
+	assert.Equal(t, Prince, state.CardInHand[0])    // Our prince remained in hand
+	assert.Equal(t, Priest, state.ActivePlayerCard) // The other player now gets a turn and drew a Priest (based on the seed)
+}
+
+func TestLastPlay(t *testing.T) {
+	rand.Seed(0)
+	state := newGame(Deck{
+		Prince: 1,
+	}, 2)
+
+	state.CardInHand[0] = Prince
+	state.CardInHand[1] = Princess
+	state.ActivePlayerCard = Guard
+	state.ActivePlayer = 1
+
+	err := state.PlayCard(Action{
+		PlayRecent:   true,
+		TargetPlayer: 0,
+		SelectedCard: Handmaid,
+	})
+	assert.NoError(t, err)
+
+	assert.True(t, state.GameEnded)
+	assert.Equal(t, 1, state.Winner)
+}

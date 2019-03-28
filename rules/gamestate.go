@@ -268,7 +268,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		state.ActivePlayerCard = state.Deck.Draw()
 		state.incrementPlayerTurn()
 	} else {
-		state.triggerGameEnd()
+		return state.triggerGameEnd()
 	}
 
 	return nil
@@ -286,7 +286,7 @@ func (state *Gamestate) incrementPlayerTurn() {
 }
 
 func (state *Gamestate) triggerGameEnd() error {
-	if state.Deck.Size() >= 1 {
+	if state.Deck.Size() > 1 {
 		// The deck could be size 0 if a prince was played in the last round.
 		return errors.New("The deck is too big")
 	}
