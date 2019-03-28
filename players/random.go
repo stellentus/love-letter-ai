@@ -6,7 +6,8 @@ import (
 	"love-letter-ai/rules"
 )
 
-// This AI will play random, but with the constraint that it won't break a rule or do something that will obviously eliminate it (i.e. discard the Princess). It might still make incredibly stupid plays (like look at an opponent's hand one round and then use the Baron to compare values, even though it should know that it will lose).
+// This AI will play random, but with the constraint that it won't break a rule or do something that will obviously eliminate it (i.e. discard the Princess).
+// It might still make incredibly stupid plays (like look at an opponent's hand one round and then use the Baron to compare values, even though it should know that it will lose).
 
 type RandomPlayer struct{}
 
