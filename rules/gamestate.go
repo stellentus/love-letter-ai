@@ -270,15 +270,23 @@ func (state *Gamestate) PlayCard(action Action) error {
 
 	if state.Deck.Size() > 1 {
 		state.ActivePlayerCard = state.Deck.Draw()
-		state.ActivePlayer++
-		if state.ActivePlayer >= state.NumPlayers {
-			state.ActivePlayer = 0
-		}
+		state.incrementPlayerTurn()
 	} else {
 		state.triggerGameEnd()
 	}
 
 	return nil
+}
+
+// incrementPlayerTurn increments the player turn. It assumes there are at least 2 active players
+func (state *Gamestate) incrementPlayerTurn() {
+	// Increment with rollover
+	state.ActivePlayer = (state.ActivePlayer + 1) % state.NumPlayers
+
+	// Skip past eliminated players
+	for state.EliminatedPlayers[state.ActivePlayer] {
+		state.ActivePlayer = (state.ActivePlayer + 1) % state.NumPlayers
+	}
 }
 
 func (state *Gamestate) triggerGameEnd() error {
