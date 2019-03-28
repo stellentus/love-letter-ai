@@ -39,6 +39,10 @@ func (rp *RandomPlayer) PlayCard(state rules.SimpleState, myID int) rules.Action
 	switch playedCard {
 	case rules.Guard:
 		action.TargetPlayer = otherPlayer
+	case rules.Priest:
+		action.TargetPlayer = otherPlayer
+	case rules.Baron:
+		action.TargetPlayer = otherPlayer
 	case rules.Prince:
 		if otherCard == rules.Princess && action.TargetPlayer == myID {
 			action.TargetPlayer = otherPlayer
