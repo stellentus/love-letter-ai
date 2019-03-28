@@ -59,7 +59,11 @@ func (deck Deck) Size() int {
 }
 
 func (deck *Deck) Draw() Card {
-	draw := int(rand.Int31n(int32(deck.Size())))
+	size := deck.Size()
+	if size == 0 {
+		return None
+	}
+	draw := int(rand.Int31n(int32(size)))
 	for name, count := range deck {
 		if draw < count {
 			deck[name] -= 1
