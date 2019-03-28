@@ -63,7 +63,6 @@ func (deck *Deck) Draw() Card {
 	for name, count := range deck {
 		if draw < count {
 			deck[name] -= 1
-			// map[Card]int(*deck)[name] -= 1 // Or maybe this is even more unreadable
 			return Card(name)
 		} else {
 			draw -= count

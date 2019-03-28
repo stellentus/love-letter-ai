@@ -3,7 +3,7 @@ package montecarlo
 import "bellstone.ca/go/love-letter-ai/rules"
 
 const (
-	// StateSpaceMagnitued represents the number of possible states considered.
+	// StateSpaceMagnitude represents the number of possible states considered.
 	// Note that some of these states are impossible to achieve in real gameplay.
 	StateSpaceMagnitude = deckSpaceMagnitude * 32 * 512 // deck*score*hand bits equals the size of the statespace
 	deckSpaceMagnitude  = 6 * 3 * 3 * 3 * 3 * 2 * 2 * 2
