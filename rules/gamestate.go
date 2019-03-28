@@ -182,7 +182,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 
 	switch state.ActivePlayerCard {
 	case Guard:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1 && action.TargetPlayer != state.ActivePlayer) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers && action.TargetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
 		}
 		if state.LastPlay[action.TargetPlayer] == Handmaid {
@@ -194,7 +194,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		}
 		// Note we don't store this history, which a real player would rely upon. e.g. if I guess 4 and it's wrong, do I guess 4 again the next turn when no Handmaids have shown up? This bot would do that.
 	case Priest:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1 && action.TargetPlayer != state.ActivePlayer) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers && action.TargetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
 		}
 		if state.LastPlay[action.TargetPlayer] == Handmaid {
@@ -202,7 +202,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		}
 		state.KnownCards[action.TargetPlayer][state.ActivePlayer] = state.CardInHand[action.TargetPlayer]
 	case Baron:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1 && action.TargetPlayer != state.ActivePlayer) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers && action.TargetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
 		}
 		if state.LastPlay[action.TargetPlayer] == Handmaid {
@@ -220,7 +220,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 	case Handmaid:
 		// Do nothing
 	case Prince:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers) {
 			return errors.New("You must target a valid player")
 		}
 		if state.LastPlay[action.TargetPlayer] == Handmaid {
@@ -237,7 +237,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 			state.eliminatePlayer(action.TargetPlayer)
 		}
 	case King:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1) {
+		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers) {
 			return errors.New("You must target a valid player")
 		}
 		if state.LastPlay[action.TargetPlayer] == Handmaid {
