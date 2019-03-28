@@ -109,7 +109,7 @@ func NewSimpleGame(deck Deck) Gamestate {
 	return state
 }
 
-func (state *Gamestate) EliminatePlayer(player int) {
+func (state *Gamestate) eliminatePlayer(player int) {
 	state.EliminatedPlayers[player] = true
 	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.CardInHand[player])
 	state.CardInHand[player] = None
@@ -131,7 +131,7 @@ func (state *Gamestate) EliminatePlayer(player int) {
 	}
 }
 
-func (state *Gamestate) ClearKnownCard(player int, card Card) {
+func (state *Gamestate) clearKnownCard(player int, card Card) {
 	// Range through the list of my known cards to reset it if I discard the known card
 	for i, val := range state.KnownCards[player] {
 		if card == val {
@@ -140,6 +140,7 @@ func (state *Gamestate) ClearKnownCard(player int, card Card) {
 	}
 }
 
+// PlayCard takes the provided action. Of course only the active player should call this at any time.
 func (state *Gamestate) PlayCard(action Action) error {
 	if state.GameEnded {
 		return errors.New("The game has already ended")
@@ -157,12 +158,12 @@ func (state *Gamestate) PlayCard(action Action) error {
 	if state.CardInHand[state.ActivePlayer] == Countess {
 		if state.ActivePlayerCard == King || state.ActivePlayerCard == Prince {
 			// Automatically eliminated for cheating. This is not the same as the rules, which simply forbid this.
-			state.EliminatePlayer(state.ActivePlayer)
+			state.eliminatePlayer(state.ActivePlayer)
 			return nil
 		}
 	}
 
-	state.ClearKnownCard(state.ActivePlayer, state.ActivePlayerCard)
+	state.clearKnownCard(state.ActivePlayer, state.ActivePlayerCard)
 	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.ActivePlayerCard)
 	state.LastPlay[state.ActivePlayer] = state.ActivePlayerCard
 
@@ -176,7 +177,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		}
 		targetCard := state.CardInHand[action.TargetPlayer]
 		if targetCard == action.SelectedCard && targetCard != Guard {
-			state.EliminatePlayer(action.TargetPlayer)
+			state.eliminatePlayer(action.TargetPlayer)
 		}
 		// Note we don't store this history, which a real player would rely upon. e.g. if I guess 4 and it's wrong, do I guess 4 again the next turn when no Handmaids have shown up? This bot would do that.
 	case Priest:
@@ -199,9 +200,9 @@ func (state *Gamestate) PlayCard(action Action) error {
 		activeValue := int(state.CardInHand[state.ActivePlayer])
 		switch {
 		case targetValue < activeValue:
-			state.EliminatePlayer(action.TargetPlayer)
+			state.eliminatePlayer(action.TargetPlayer)
 		case targetValue > activeValue:
-			state.EliminatePlayer(state.ActivePlayer)
+			state.eliminatePlayer(state.ActivePlayer)
 		}
 	case Handmaid:
 		// Do nothing
@@ -215,12 +216,12 @@ func (state *Gamestate) PlayCard(action Action) error {
 			action.TargetPlayer = state.ActivePlayer
 		}
 		targetCard := state.CardInHand[action.TargetPlayer]
-		state.ClearKnownCard(action.TargetPlayer, targetCard)
+		state.clearKnownCard(action.TargetPlayer, targetCard)
 		state.Discards[action.TargetPlayer] = append(state.Discards[action.TargetPlayer], targetCard)
 		state.CardInHand[action.TargetPlayer] = state.Deck.Draw()
 
 		if targetCard == Princess {
-			state.EliminatePlayer(action.TargetPlayer)
+			state.eliminatePlayer(action.TargetPlayer)
 		}
 	case King:
 		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1) {
@@ -249,7 +250,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		// Do nothing
 	case Princess:
 		// Idiot!
-		state.EliminatePlayer(state.ActivePlayer)
+		state.eliminatePlayer(state.ActivePlayer)
 	default:
 		return errors.New("An invalid card was played")
 	}
