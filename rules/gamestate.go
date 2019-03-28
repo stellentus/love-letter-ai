@@ -77,6 +77,38 @@ func NewGame(playerCount int) (Gamestate, error) {
 	return state, nil
 }
 
+// NewSimpleGame deals out a new game for 2 players with a simplified deck.
+// This always assumes that player 0 is the starting player.
+// It draws 4 cards from the previous deck:
+//	* 2 for player 0's hand
+//	* 1 for player 1's hand
+//	* 1 for player 1's last play
+func NewSimpleGame(deck Deck) Gamestate {
+	playerCount := 2
+
+	state := Gamestate{
+		Deck:             deck,
+		Discards:         make([]Stack, playerCount),
+		ActivePlayer:     0,
+		CardInHand:       make([]Card, playerCount),
+		KnownCards:       make([]Stack, playerCount),
+		ActivePlayerCard: None,
+		Faceup:           []Card{},
+	}
+
+	state.LastPlay[1] = state.Deck.Draw()
+
+	for i := range state.CardInHand {
+		state.CardInHand[i] = state.Deck.Draw()
+	}
+	for i := range state.KnownCards {
+		state.KnownCards[i] = make([]Card, playerCount)
+	}
+	state.ActivePlayerCard = state.Deck.Draw()
+
+	return state
+}
+
 func (state *Gamestate) EliminatePlayer(player int) {
 	state.EliminatedPlayers[player] = true
 	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.CardInHand[player])
