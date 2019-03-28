@@ -12,8 +12,9 @@ type Gamestate struct {
 	// Faceup is a Stack of all cards that were dealt face-up to no one. Order is unimportant.
 	Faceup Stack
 
-	// PlayerHistory contains a Stack for each player, showing their face-up cards.
-	PlayerHistory []Stack
+	// Discards contains a Stack for each player, showing their face-up cards.
+	// Note the top card here might not be the most recently played card if a Prince was played against this player.
+	Discards []Stack
 
 	// KnownCards contains a Stack for each player, with a Stack of their knowledge of opponents' cards.
 	// Index first by player about whom you want to know, then by the index of the player who might know something.
@@ -46,7 +47,7 @@ type Gamestate struct {
 func NewGame(playerCount int) (Gamestate, error) {
 	state := Gamestate{
 		Deck:             DefaultDeck(),
-		PlayerHistory:    make([]Stack, playerCount),
+		Discards:         make([]Stack, playerCount),
 		ActivePlayer:     0,
 		CardInHand:       make([]Card, playerCount),
 		KnownCards:       make([]Stack, playerCount),
@@ -75,7 +76,7 @@ func NewGame(playerCount int) (Gamestate, error) {
 
 func (state *Gamestate) EliminatePlayer(player int) {
 	state.EliminatedPlayers[player] = true
-	state.PlayerHistory[state.ActivePlayer] = append(state.PlayerHistory[state.ActivePlayer], state.CardInHand[player])
+	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.CardInHand[player])
 	state.CardInHand[player] = None
 	for i := range state.KnownCards[player] {
 		state.KnownCards[player][i] = None
@@ -96,7 +97,7 @@ func (state *Gamestate) EliminatePlayer(player int) {
 }
 
 func (state *Gamestate) TopCardForPlayer(player int) Card {
-	return state.PlayerHistory[player][len(state.PlayerHistory[player])-1]
+	return state.Discards[player][len(state.Discards[player])-1]
 }
 
 func (state *Gamestate) ClearKnownCard(player int, card Card) {
@@ -131,7 +132,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 	}
 
 	state.ClearKnownCard(state.ActivePlayer, state.ActivePlayerCard)
-	state.PlayerHistory[state.ActivePlayer] = append(state.PlayerHistory[state.ActivePlayer], state.ActivePlayerCard)
+	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.ActivePlayerCard)
 
 	switch state.ActivePlayerCard {
 	case Guard:
@@ -183,7 +184,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		}
 		targetCard := state.CardInHand[action.TargetPlayer]
 		state.ClearKnownCard(action.TargetPlayer, targetCard)
-		state.PlayerHistory[action.TargetPlayer] = append(state.PlayerHistory[action.TargetPlayer], targetCard)
+		state.Discards[action.TargetPlayer] = append(state.Discards[action.TargetPlayer], targetCard)
 		state.CardInHand[action.TargetPlayer] = state.Deck.Draw()
 
 		if targetCard == Princess {
@@ -251,10 +252,10 @@ func (state *Gamestate) triggerGameEnd() error {
 	}
 
 	if tie {
-		scores := make([]int, len(state.PlayerHistory))
+		scores := make([]int, len(state.Discards))
 		maxScore := 0
 		for i := range scores {
-			for _, val := range state.PlayerHistory[i] {
+			for _, val := range state.Discards[i] {
 				scores[i] += int(val)
 			}
 			if scores[i] > maxScore {

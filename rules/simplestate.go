@@ -23,7 +23,7 @@ func (state *Gamestate) AsSimpleState() SimpleState {
 	simple := SimpleState{}
 
 	simple.Discards = state.Faceup.AsDeck()
-	for _, val := range state.PlayerHistory {
+	for _, val := range state.Discards {
 		simple.Discards.AddStack(val)
 	}
 	simple.RecentDraw = state.ActivePlayerCard
@@ -34,11 +34,11 @@ func (state *Gamestate) AsSimpleState() SimpleState {
 	if state.ActivePlayer == 0 {
 		opponent = 1
 	}
-	if len(state.PlayerHistory[opponent]) > 0 {
+	if len(state.Discards[opponent]) > 0 {
 		// Get opponent's last played card. (Note if the opponent played the Prince, then this will show the discarded card, instead.)
-		simple.OpponentCard = state.PlayerHistory[opponent][len(state.PlayerHistory[opponent])-1]
+		simple.OpponentCard = state.Discards[opponent][len(state.Discards[opponent])-1]
 	} // else default to None
-	simple.ScoreDiff = state.PlayerHistory[state.ActivePlayer].Score() - state.PlayerHistory[opponent].Score()
+	simple.ScoreDiff = state.Discards[state.ActivePlayer].Score() - state.Discards[opponent].Score()
 
 	return simple
 }
