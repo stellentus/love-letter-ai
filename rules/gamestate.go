@@ -16,6 +16,9 @@ type Gamestate struct {
 	// Note the top card here might not be the most recently played card if a Prince was played against this player.
 	Discards []Stack
 
+	// LastPlay contains the last card played by each player. This will often be the last card in the player's discard stack, but not always.
+	LastPlay Stack
+
 	// KnownCards contains a Stack for each player, with a Stack of their knowledge of opponents' cards.
 	// Index first by player about whom you want to know, then by the index of the player who might know something.
 	// A card of 'None' means no knowledge.
@@ -96,10 +99,6 @@ func (state *Gamestate) EliminatePlayer(player int) {
 	}
 }
 
-func (state *Gamestate) TopCardForPlayer(player int) Card {
-	return state.Discards[player][len(state.Discards[player])-1]
-}
-
 func (state *Gamestate) ClearKnownCard(player int, card Card) {
 	// Range through the list of my known cards to reset it if I discard the known card
 	for i, val := range state.KnownCards[player] {
@@ -133,13 +132,14 @@ func (state *Gamestate) PlayCard(action Action) error {
 
 	state.ClearKnownCard(state.ActivePlayer, state.ActivePlayerCard)
 	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.ActivePlayerCard)
+	state.LastPlay[state.ActivePlayer] = state.ActivePlayerCard
 
 	switch state.ActivePlayerCard {
 	case Guard:
 		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1 && action.TargetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
+		if state.LastPlay[action.TargetPlayer] == Handmaid {
 			break
 		}
 		targetCard := state.CardInHand[action.TargetPlayer]
@@ -151,7 +151,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1 && action.TargetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
+		if state.LastPlay[action.TargetPlayer] == Handmaid {
 			break
 		}
 		state.KnownCards[action.TargetPlayer][state.ActivePlayer] = state.CardInHand[action.TargetPlayer]
@@ -159,7 +159,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1 && action.TargetPlayer != state.ActivePlayer) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
+		if state.LastPlay[action.TargetPlayer] == Handmaid {
 			break
 		}
 		// Compare cards. Eliminate low. Tie does nothing
@@ -177,7 +177,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
+		if state.LastPlay[action.TargetPlayer] == Handmaid {
 			// If you target someone invalid, default to self.
 			// The game rules say that if everyone else has a Handmaid, you must target yourself, so this is a good default.
 			action.TargetPlayer = state.ActivePlayer
@@ -194,7 +194,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= 1) {
 			return errors.New("You must target a valid player")
 		}
-		if state.TopCardForPlayer(action.TargetPlayer) == Handmaid {
+		if state.LastPlay[action.TargetPlayer] == Handmaid {
 			break
 		}
 		// Trade hands
