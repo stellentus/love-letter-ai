@@ -24,7 +24,7 @@ func New(players []players.Player) (Gamemaster, error) {
 	return Gamemaster{
 		Players:   players,
 		Gamestate: state,
-		Wins:      make([]int, len(players)),
+		Wins:      make([]int, state.NumPlayers),
 	}, err
 }
 
