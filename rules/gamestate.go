@@ -95,10 +95,6 @@ func (state *Gamestate) EliminatePlayer(player int) {
 	}
 }
 
-func (state *Gamestate) ActiveCardIsHighest() bool {
-	return int(state.ActivePlayerCard) > int(state.CardInHand[state.ActivePlayer])
-}
-
 func (state *Gamestate) TopCardForPlayer(player int) Card {
 	return state.PlayerHistory[player][len(state.PlayerHistory[player])-1]
 }
@@ -117,8 +113,9 @@ func (state *Gamestate) PlayCard(action Action) error {
 		return errors.New("The game has already ended")
 	}
 
-	// If the card to be played isn't the "active" card, swap them to make the rest of this function easier
-	if state.ActiveCardIsHighest() != action.PlayHighest {
+	// If the card to be played isn't the recent card, swap them to make the rest of this function easier.
+	// Since that card will be discarded this turn, it doesn't matter that we do this.
+	if !action.PlayRecent {
 		card := state.ActivePlayerCard
 		state.ActivePlayerCard = state.CardInHand[state.ActivePlayer]
 		state.CardInHand[state.ActivePlayer] = card

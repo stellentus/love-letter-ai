@@ -1,8 +1,8 @@
 package rules
 
 type Action struct {
-	// PlayHighest is true if the highest card is played (otherwise, lowest is played).
-	PlayHighest bool
+	// PlayRecent is true if the recently dealt card is played (otherwise, the old card is played).
+	PlayRecent bool
 
 	// TargetPlayer is set to the ID of the player targeted by the card, if applicable.
 	TargetPlayer int
