@@ -5,6 +5,9 @@ import (
 )
 
 type Gamestate struct {
+	// NumPlayers is the number of players in the game.
+	NumPlayers int
+
 	// Deck includes all remaining cards.
 	// Note this includes the one card that is always dealt face-down in a real game, so here a game should end with one card in this deck.
 	Deck
@@ -96,6 +99,7 @@ func NewSimpleGame(deck Deck) Gamestate {
 
 func newGame(deck Deck, playerCount int) Gamestate {
 	return Gamestate{
+		NumPlayers:        playerCount,
 		Deck:              deck,
 		Faceup:            []Card{},
 		Discards:          make([]Stack, playerCount),
@@ -267,6 +271,9 @@ func (state *Gamestate) PlayCard(action Action) error {
 	if state.Deck.Size() > 1 {
 		state.ActivePlayerCard = state.Deck.Draw()
 		state.ActivePlayer++
+		if state.ActivePlayer >= state.NumPlayers {
+			state.ActivePlayer = 0
+		}
 	} else {
 		state.triggerGameEnd()
 	}
