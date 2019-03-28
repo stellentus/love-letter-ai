@@ -12,6 +12,30 @@ func TestNewGame(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestPlayingPrincessIdiot(t *testing.T) {
+	rand.Seed(0)
+	state := newGame(Deck{
+		Guard:  4,
+		Priest: 2,
+		Baron:  2,
+	}, 2)
+
+	state.CardInHand[0] = Princess
+	state.CardInHand[1] = Countess
+	state.ActivePlayerCard = Guard
+
+	// Play the Princess
+	err := state.PlayCard(Action{
+		PlayRecent:   false,
+		TargetPlayer: 1,
+		SelectedCard: None,
+	})
+	assert.NoError(t, err)
+
+	assert.True(t, state.GameEnded)
+	assert.Equal(t, 1, state.Winner)
+}
+
 func TestPlayingPrince(t *testing.T) {
 	rand.Seed(0)
 	state := newGame(Deck{
@@ -39,7 +63,7 @@ func TestPlayingPrince(t *testing.T) {
 	assert.Equal(t, state.Deck[Guard], 2)          // So only two guards remain
 }
 
-func TestPlayingGuard(t *testing.T) {
+func TestPlayingGuardBadGuess(t *testing.T) {
 	rand.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
@@ -51,7 +75,7 @@ func TestPlayingGuard(t *testing.T) {
 	state.CardInHand[1] = Countess
 	state.ActivePlayerCard = Guard
 
-	// Play the Prince on the other player
+	// Play the Guard on the other player
 	err := state.PlayCard(Action{
 		PlayRecent:   true,
 		TargetPlayer: 1,
@@ -64,6 +88,30 @@ func TestPlayingGuard(t *testing.T) {
 	assert.Equal(t, Prince, state.CardInHand[0])   // Our prince remained in hand
 	assert.Equal(t, Guard, state.ActivePlayerCard) // The other player now gets a turn and drew a Guard (based on the seed)
 	assert.Equal(t, state.Deck[Guard], 3)          // So only three guards remain
+}
+
+func TestPlayingGuardGoodGuess(t *testing.T) {
+	rand.Seed(0)
+	state := newGame(Deck{
+		Guard:  4,
+		Priest: 2,
+		Baron:  2,
+	}, 2)
+
+	state.CardInHand[0] = Prince
+	state.CardInHand[1] = Countess
+	state.ActivePlayerCard = Guard
+
+	// Play the Guard on the other player
+	err := state.PlayCard(Action{
+		PlayRecent:   true,
+		TargetPlayer: 1,
+		SelectedCard: Countess, // correct guess
+	})
+	assert.NoError(t, err)
+
+	assert.True(t, state.GameEnded)
+	assert.Equal(t, 0, state.Winner)
 }
 
 func TestPlayingPrinceOnPrincess(t *testing.T) {
@@ -88,4 +136,104 @@ func TestPlayingPrinceOnPrincess(t *testing.T) {
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 0, state.Winner)
+}
+
+func TestPlayingPrinceWithCountess(t *testing.T) {
+	rand.Seed(0)
+	state := newGame(Deck{
+		Guard:  4,
+		Priest: 2,
+		Baron:  2,
+	}, 2)
+
+	state.CardInHand[0] = Prince
+	state.CardInHand[1] = Princess
+	state.ActivePlayerCard = Countess
+
+	// Play the Prince on the other player, even though we MUST play the countess
+	err := state.PlayCard(Action{
+		PlayRecent:   false,
+		TargetPlayer: 1,
+		SelectedCard: None,
+	})
+	assert.NoError(t, err)
+
+	// ...so we lose
+	assert.True(t, state.GameEnded)
+	assert.Equal(t, 1, state.Winner)
+}
+
+func TestPlayingCountessCorrectly(t *testing.T) {
+	rand.Seed(0)
+	state := newGame(Deck{
+		Guard:  4,
+		Priest: 2,
+		Baron:  2,
+	}, 2)
+
+	state.CardInHand[0] = Prince
+	state.CardInHand[1] = Princess
+	state.ActivePlayerCard = Countess
+
+	// Play the Prince on the other player, even though we MUST play the countess
+	err := state.PlayCard(Action{
+		PlayRecent:   true,
+		TargetPlayer: 1,
+		SelectedCard: None,
+	})
+	assert.NoError(t, err)
+
+	// .. and the game goes on
+	assert.False(t, state.GameEnded)
+	assert.Equal(t, 1, state.ActivePlayer)         // It's the next player's turn
+	assert.Equal(t, Princess, state.CardInHand[1]) // The other player still has the Princess
+	assert.Equal(t, Prince, state.CardInHand[0])   // Our prince remained in hand
+	assert.Equal(t, Guard, state.ActivePlayerCard) // The other player now gets a turn and drew a Guard (based on the seed)
+	assert.Equal(t, state.Deck[Guard], 3)          // So only three guards remain
+}
+
+func TestPlayingBaronWithCountessVsGuard(t *testing.T) {
+	rand.Seed(0)
+	state := newGame(Deck{
+		Guard:  4,
+		Priest: 2,
+		Baron:  1,
+	}, 2)
+
+	state.CardInHand[0] = Baron
+	state.CardInHand[1] = Guard
+	state.ActivePlayerCard = Countess
+
+	err := state.PlayCard(Action{
+		PlayRecent:   false,
+		TargetPlayer: 1,
+		SelectedCard: None,
+	})
+	assert.NoError(t, err)
+
+	assert.True(t, state.GameEnded)
+	assert.Equal(t, 0, state.Winner)
+}
+
+func TestPlayingBaronWithPriestVsKing(t *testing.T) {
+	rand.Seed(0)
+	state := newGame(Deck{
+		Guard:  4,
+		Priest: 1,
+		Baron:  1,
+	}, 2)
+
+	state.CardInHand[0] = Priest
+	state.CardInHand[1] = King
+	state.ActivePlayerCard = Baron
+
+	err := state.PlayCard(Action{
+		PlayRecent:   true,
+		TargetPlayer: 1,
+		SelectedCard: None,
+	})
+	assert.NoError(t, err)
+
+	assert.True(t, state.GameEnded)
+	assert.Equal(t, 1, state.Winner)
 }
