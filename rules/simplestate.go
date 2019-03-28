@@ -5,11 +5,11 @@ type SimpleState struct {
 	// Discards is all of the cards discarded so far (unsorted, unattributed)
 	Discards Deck
 
-	// HighCard is the current player's high card
-	HighCard Card
+	// RecentDraw is the card the current player just drew
+	RecentDraw Card
 
-	// LowCard is the current player's low card
-	LowCard Card
+	// OldCard is the card the current player already had
+	OldCard Card
 
 	// OpponentCard is the card most recently played by the opponent
 	OpponentCard Card
@@ -26,13 +26,8 @@ func (state *Gamestate) AsSimpleState() SimpleState {
 	for _, val := range state.PlayerHistory {
 		simple.Discards.AddStack(val)
 	}
-	if state.ActiveCardIsHighest() {
-		simple.HighCard = state.ActivePlayerCard
-		simple.LowCard = state.CardInHand[state.ActivePlayer]
-	} else {
-		simple.LowCard = state.ActivePlayerCard
-		simple.HighCard = state.CardInHand[state.ActivePlayer]
-	}
+	simple.RecentDraw = state.ActivePlayerCard
+	simple.OldCard = state.CardInHand[state.ActivePlayer]
 
 	// Figure out opponent's ID
 	opponent := 0

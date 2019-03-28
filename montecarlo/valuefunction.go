@@ -12,8 +12,8 @@ const (
 type ValueFunction [StateSpaceMagnitude]float32
 
 // Index state returns a unique number between 0 and StateSpaceMagnitude-1 for the given state.
-func IndexOfState(seenCards rules.Deck, high, low, opponent rules.Card, scoreDelta int) int {
-	return (((deckValue(seenCards) << 5) + scoreValue(scoreDelta)) << 9) + handValue(high, low, opponent)
+func IndexOfState(seenCards rules.Deck, recent, old, opponent rules.Card, scoreDelta int) int {
+	return (((deckValue(seenCards) << 5) + scoreValue(scoreDelta)) << 9) + handValue(recent, old, opponent)
 }
 
 // 5 bits
@@ -44,9 +44,9 @@ func deckValue(sc rules.Deck) int {
 }
 
 // 9 bits
-func handValue(high, low, opponent rules.Card) int {
-	high--
-	low--
+func handValue(recent, old, opponent rules.Card) int {
+	recent--
+	old--
 	opponent--
-	return int((((low << 3) + high) << 3) + opponent)
+	return int((((old << 3) + recent) << 3) + opponent)
 }
