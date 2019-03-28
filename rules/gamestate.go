@@ -53,6 +53,7 @@ func NewGame(playerCount int) (Gamestate, error) {
 		Discards:         make([]Stack, playerCount),
 		ActivePlayer:     0,
 		CardInHand:       make([]Card, playerCount),
+		LastPlay:         make([]Card, playerCount),
 		KnownCards:       make([]Stack, playerCount),
 		ActivePlayerCard: None,
 	}
@@ -91,6 +92,7 @@ func NewSimpleGame(deck Deck) Gamestate {
 		Discards:         make([]Stack, playerCount),
 		ActivePlayer:     0,
 		CardInHand:       make([]Card, playerCount),
+		LastPlay:         make([]Card, playerCount),
 		KnownCards:       make([]Stack, playerCount),
 		ActivePlayerCard: None,
 		Faceup:           []Card{},
