@@ -57,7 +57,6 @@ func (master *Gamemaster) PlaySeries(gamesToWin int) (int, error) {
 			return 0, err
 		}
 		winner := (master.Winner - master.startPlayerOffset + master.NumPlayers) % master.NumPlayers
-		master.Wins[winner] += 1
 		master.startPlayerOffset = winner
 		master.Gamestate, err = rules.NewGame(master.NumPlayers)
 	}
@@ -73,6 +72,7 @@ func (master *Gamemaster) HighScore() (int, int, bool) {
 		if score > maxScore {
 			maxPid = pid
 			maxScore = score
+			tie = false
 		} else if score == maxScore {
 			tie = true
 		}
