@@ -17,6 +17,12 @@ func BenchmarkIndexOfState(b *testing.B) {
 	}
 }
 
+func BenchmarkEvenValueFunction(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		EvenValueFunction()
+	}
+}
+
 func TestZeroState(t *testing.T) {
 	seenCards := rules.DefaultDeck()
 	for i := range seenCards {

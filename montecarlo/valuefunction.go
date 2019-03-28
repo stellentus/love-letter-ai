@@ -10,6 +10,15 @@ const (
 )
 
 type ValueFunction [StateSpaceMagnitude]float32
+type Action [StateSpaceMagnitude]uint8
+
+func EvenValueFunction() ValueFunction {
+	vf := ValueFunction{}
+	for i := range vf {
+		vf[i] = 0.5
+	}
+	return vf
+}
 
 // Index state returns a unique number between 0 and StateSpaceMagnitude-1 for the given state.
 func IndexOfState(seenCards rules.Deck, recent, old, opponent rules.Card, scoreDelta int) int {
