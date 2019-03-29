@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	rounds = 1000000
-	gamma  = 0.02
+	rounds = 1000000000
+	gamma  = 0.05
 )
 
 var simpleDeck = rules.Deck{
@@ -26,26 +26,24 @@ func main() {
 	for i := 0; i < rounds; i++ {
 		updateValueFunction(&vf)
 	}
-	for _, v := range []int{
-		24,
-		895011,
-		3564548,
-		256,
-		25280,
-		33056,
-	} {
-		if v < 16384 {
-			fmt.Println()
+
+	for i := 0; i < 20; i++ {
+		states, winner := traceGame()
+		fmt.Println("Winner:", winner)
+		for _, v := range states {
+			fmt.Printf("    % 8d: %0.3f\n", v, vf[v])
 		}
-		fmt.Printf("% 8d: %0.3f\n", v, vf[v])
 	}
 }
 
-func updateValueFunction(vf *montecarlo.ValueFunction) {
-	sg := rules.NewSimpleGame(simpleDeck)
+func traceGame() ([]int, int) {
+	sg, err := rules.NewGame(2)
+	if err != nil {
+		panic(err)
+	}
 	p := players.RandomPlayer{}
 
-	states := make([]int, 0, 8)
+	states := make([]int, 0, 15)
 	for !sg.GameEnded {
 		s := sg.AsSimpleState()
 		if s.OpponentCard == 0 {
@@ -63,8 +61,14 @@ func updateValueFunction(vf *montecarlo.ValueFunction) {
 		}
 	}
 
+	return states, sg.Winner
+}
+
+func updateValueFunction(vf *montecarlo.ValueFunction) {
+	states, winner := traceGame()
+
 	p1v, p2v := float32(1.0), float32(0.0)
-	if sg.Winner != 0 {
+	if winner != 0 {
 		p1v, p2v = 0.0, 1.0
 	}
 
