@@ -7,9 +7,10 @@ import (
 )
 
 type Value struct {
-	// The maximum visits to a state isn't likely to be above 4 billion, so this is fine.
-	sum   uint32
-	count uint32
+	// The maximum visits to a state isn't likely to be much above 65k, so let's save some RAM.
+	// It's necessary to deal with overflow, but we don't care about loss of precision from occasionally dividing by two.
+	sum   uint16
+	count uint16
 }
 
 type ValueFunction [state.SpaceMagnitude]Value
@@ -22,8 +23,14 @@ func (vf *ValueFunction) Update(pl players.Player) {
 	}
 
 	for i, s := range tr.States {
-		vf[s].sum += uint32(tr.Returns[i])
+		vf[s].sum += uint16(tr.Returns[i])
 		vf[s].count++
+
+		// Check for overflow
+		if vf[s].count == 0xFFFF {
+			vf[s].sum /= 2
+			vf[s].count /= 2
+		}
 	}
 }
 
