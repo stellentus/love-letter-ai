@@ -27,6 +27,13 @@ func TestZeroState(t *testing.T) {
 	assert.EqualValues(t, 0, Index(seenCards, high, low, opponent, scoreDelta))
 }
 
+func TestMinimalDeck(t *testing.T) {
+	high, low, opponent := rules.Guard, rules.Guard, rules.Guard
+	scoreDelta := 0
+	deck := rules.Deck{rules.Guard: 1}
+	assert.EqualValues(t, 1<<(5+9), Index(deck, high, low, opponent, scoreDelta))
+}
+
 func TestFullStateSimpleDeck(t *testing.T) {
 	high, low, opponent := rules.Princess, rules.Countess, rules.King
 	scoreDelta := -15
@@ -59,6 +66,7 @@ func TestScoreDelta(t *testing.T) {
 
 func TestDeckValues(t *testing.T) {
 	assert.EqualValues(t, 0, deckValue(rules.Deck{}), "Empty")
+	assert.EqualValues(t, 1, deckValue(rules.Deck{rules.Guard: 1}), "One guard")
 	assert.EqualValues(t, 3, deckValue(rules.Deck{rules.Guard: 3}), "Three guards")
 	assert.EqualValues(t, 8, deckValue(rules.Deck{rules.Guard: 2, rules.Priest: 1}), "Two guards and a priest walk into a bar...")
 	assert.EqualValues(t, deckSpaceMagnitude-1, deckValue(rules.DefaultDeck()), "Full")
