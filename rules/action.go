@@ -25,3 +25,36 @@ func (act Action) AsInt() int {
 	}
 	return retVal
 }
+
+func (card Card) PossibleActions(isRecent bool, opponentIdx int) []Action {
+	switch card {
+	case Guard:
+		acts := make([]Action, 0, 8)
+		for card := Guard + 1; card <= Princess; card++ {
+			acts = append(acts, Action{
+				PlayRecent:   isRecent,
+				TargetPlayer: opponentIdx,
+				SelectedCard: card,
+			})
+		}
+		return acts
+	case Prince:
+		return []Action{
+			Action{
+				PlayRecent:   isRecent,
+				TargetPlayer: 0,
+			},
+			Action{
+				PlayRecent:   isRecent,
+				TargetPlayer: 1,
+			},
+		}
+	case King:
+		return []Action{Action{
+			PlayRecent:   isRecent,
+			TargetPlayer: opponentIdx,
+		}}
+	}
+
+	return []Action{Action{PlayRecent: isRecent}}
+}
