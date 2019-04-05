@@ -10,5 +10,5 @@ const (
 
 // ActionIndex returns a unique number between 0 and ActionSpaceMagnitude-1 for the given state.
 func ActionIndex(seenCards rules.Deck, recent, old, opponent rules.Card, scoreDelta int, act rules.Action) int {
-	return (((((deckValue(seenCards) << 5) + scoreValue(scoreDelta)) << 9) + handValue(recent, old, opponent)) << 4) + act.AsInt()
+	return (Index(seenCards, recent, old, opponent, scoreDelta) << 4) + act.AsInt()
 }
