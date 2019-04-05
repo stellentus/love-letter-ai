@@ -22,8 +22,11 @@ func (vf *ValueFunction) Update(pl players.Player) {
 		panic(err.Error())
 	}
 
-	for i, s := range tr.States {
-		vf[s].sum += uint16(tr.Returns[i])
+	for _, si := range tr.StateInfos {
+		s := si.State
+		if si.Won {
+			vf[s].sum++
+		}
 		vf[s].count++
 
 		// Check for overflow

@@ -30,8 +30,8 @@ func main() {
 			panic(err.Error())
 		}
 		fmt.Println("Winner:", tr.Winner)
-		for _, v := range tr.States {
-			fmt.Printf("    % 8d: %0.3f\n", v, vf.Value(v))
+		for _, si := range tr.StateInfos {
+			fmt.Printf("    % 8d: %0.3f\n", si.State, vf.Value(si.State))
 		}
 	}
 }
