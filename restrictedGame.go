@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	rounds = 1000000000
-	gamma  = 0.05
+	rounds     = 1000000000
+	valueScale = 0.05
+	gamma      = 1.0
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 
 	fmt.Println("Running...")
 	for i := 0; i < rounds; i++ {
-		vf.Update(&pl, gamma)
+		vf.Update(&pl, gamma, valueScale)
 	}
 
 	for i := 0; i < 20; i++ {

@@ -17,19 +17,13 @@ func EvenValueFunction() ValueFunction {
 	return vf
 }
 
-func (vf *ValueFunction) Update(pl players.Player, gamma float32) {
-	states, _, winner, err := gamemaster.TraceOneGame(pl, gamma)
+func (vf *ValueFunction) Update(pl players.Player, gamma, valueScale float32) {
+	states, rets, _, err := gamemaster.TraceOneGame(pl, gamma)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	p1v, p2v := float32(1.0), float32(0.0)
-	if winner != 0 {
-		p1v, p2v = 0.0, 1.0
-	}
-
-	for _, s := range states {
-		vf[s] += (p1v - vf[s]) * gamma
-		p1v, p2v = p2v, p1v
+	for i, s := range states {
+		vf[s] += (rets[i] - vf[s]) * valueScale
 	}
 }
