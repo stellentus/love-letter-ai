@@ -9,19 +9,19 @@ import (
 	"math/rand"
 )
 
-type qPlayer struct {
+type QPlayer struct {
 	qf      []Value
 	epsilon float32
 }
 
-func NewQPlayer(epsilon float32) *qPlayer {
-	return &qPlayer{
+func NewQPlayer(epsilon float32) *QPlayer {
+	return &QPlayer{
 		qf:      make([]Value, state.ActionSpaceMagnitude, state.ActionSpaceMagnitude),
 		epsilon: epsilon,
 	}
 }
 
-func (qp *qPlayer) TrainWithPlayerPolicy(episodes int, pl players.Player) {
+func (qp *QPlayer) TrainWithPlayerPolicy(episodes int, pl players.Player) {
 	for i := 0; i < episodes; i++ {
 		if (i % 100000) == 0 {
 			fmt.Printf("% 2.2f%% complete\r", float32(i)/float32(episodes)*100)
@@ -39,7 +39,7 @@ func (qp *qPlayer) TrainWithPlayerPolicy(episodes int, pl players.Player) {
 	fmt.Println("100.0% complete")
 }
 
-func (qp *qPlayer) TrainWithSelfPolicy(episodes int) {
+func (qp *QPlayer) TrainWithSelfPolicy(episodes int) {
 	qp.TrainWithPlayerPolicy(episodes, qp)
 }
 
@@ -47,7 +47,7 @@ func (qp *qPlayer) TrainWithSelfPolicy(episodes int) {
 // If it hasn't learned anything for this state, it plays randomly.
 // It will also choose a random action with probability epsilon. This isn't exactly
 // epsilon-greedy because it doesn't subtract the probability of the greedy action.
-func (qp *qPlayer) PlayCard(state players.SimpleState) rules.Action {
+func (qp *QPlayer) PlayCard(state players.SimpleState) rules.Action {
 	act := qp.policy(state.AsInt())
 	if act == nil || rand.Float32() < qp.epsilon {
 		return (&players.RandomPlayer{}).PlayCard(state)
@@ -55,13 +55,13 @@ func (qp *qPlayer) PlayCard(state players.SimpleState) rules.Action {
 	return *act
 }
 
-func (qp qPlayer) Value(st int) float32 {
+func (qp QPlayer) Value(st int) float32 {
 	return float32(qp.qf[st].sum) / float32(qp.qf[st].count)
 }
 
 // policy returns the greedy action for the given state. (Note the argument should be a state, not an action-state.)
 // Ties are broken by choosing the first option (i.e. arbitrarily in a deterministic way).
-func (qp qPlayer) policy(st int) *rules.Action {
+func (qp QPlayer) policy(st int) *rules.Action {
 	bestActs := []int{}
 	bestActValue := float32(0)
 	for act, actState := range state.AllActionStates(st) {
@@ -81,7 +81,7 @@ func (qp qPlayer) policy(st int) *rules.Action {
 	}
 }
 
-func (qp *qPlayer) SaveState(si gamemaster.StateInfo) {
+func (qp *QPlayer) SaveState(si gamemaster.StateInfo) {
 	s := si.ActionState
 	if si.Won {
 		qp.qf[s].sum++
