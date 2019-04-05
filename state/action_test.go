@@ -81,3 +81,13 @@ func TestFullActionState(t *testing.T) {
 	}
 	assert.EqualValues(t, ActionSpaceMagnitude-1, ActionIndex(seenCards, high, low, opponent, scoreDelta, action))
 }
+
+func TestAllActionList(t *testing.T) {
+	expected := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+	assert.EqualValues(t, expected, AllActionStates(0))
+}
+
+func TestAllActionListNonzeroState(t *testing.T) {
+	expected := []int{0 + (19827491 << 4), 1 + (19827491 << 4), 2 + (19827491 << 4), 3 + (19827491 << 4), 4 + (19827491 << 4), 5 + (19827491 << 4), 6 + (19827491 << 4), 7 + (19827491 << 4), 8 + (19827491 << 4), 9 + (19827491 << 4), 10 + (19827491 << 4), 11 + (19827491 << 4), 12 + (19827491 << 4), 13 + (19827491 << 4), 14 + (19827491 << 4), 15 + (19827491 << 4)}
+	assert.EqualValues(t, expected, AllActionStates(19827491))
+}

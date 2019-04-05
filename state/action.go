@@ -22,3 +22,14 @@ func Indices(seenCards rules.Deck, recent, old, opponent rules.Card, scoreDelta 
 func actionIndex(stateIndex int, act rules.Action) int {
 	return (stateIndex << 4) + act.AsInt()
 }
+
+// AllActionStates returns all possible ActionStates for a given state.
+// It does not eliminate actions that are impossible for the given state, so it always returns 16 options.
+func AllActionStates(state int) []int {
+	states := make([]int, 0, 16)
+	baseState := state << 4
+	for i := 0; i < 16; i++ {
+		states = append(states, baseState+i)
+	}
+	return states
+}
