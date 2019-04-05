@@ -1,6 +1,9 @@
 package players
 
-import "love-letter-ai/rules"
+import (
+	"love-letter-ai/rules"
+	"love-letter-ai/state"
+)
 
 // SimpleState provides a simplified state. It is only valid for 2 players.
 type SimpleState struct {
@@ -40,4 +43,12 @@ func NewSimpleState(state rules.Gamestate) SimpleState {
 	simple.ScoreDiff = state.Discards[state.ActivePlayer].Score() - state.Discards[opponent].Score()
 
 	return simple
+}
+
+func (ss SimpleState) AsInt() int {
+	return state.Index(ss.Discards, ss.RecentDraw, ss.OldCard, ss.OpponentCard, ss.ScoreDiff)
+}
+
+func (ss SimpleState) AsIntWithAction(act rules.Action) (int, int) {
+	return state.Indices(ss.Discards, ss.RecentDraw, ss.OldCard, ss.OpponentCard, ss.ScoreDiff, act)
 }
