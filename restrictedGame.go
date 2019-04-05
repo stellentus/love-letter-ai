@@ -8,18 +8,17 @@ import (
 )
 
 const (
-	rounds     = 1000000000
-	valueScale = 0.05
-	gamma      = 1.0
+	rounds = 1000000000
+	gamma  = 0.95
 )
 
 func main() {
-	vf := montecarlo.EvenValueFunction()
+	vf := montecarlo.ValueFunction{}
 	pl := players.RandomPlayer{}
 
 	fmt.Println("Running...")
 	for i := 0; i < rounds; i++ {
-		vf.Update(&pl, gamma, valueScale)
+		vf.Update(&pl, gamma)
 	}
 
 	for i := 0; i < 20; i++ {
@@ -29,7 +28,7 @@ func main() {
 		}
 		fmt.Println("Winner:", winner)
 		for _, v := range states {
-			fmt.Printf("    % 8d: %0.3f\n", v, vf[v])
+			fmt.Printf("    % 8d: %0.3f\n", v, vf.Value(v))
 		}
 	}
 }
