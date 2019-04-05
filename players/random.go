@@ -11,7 +11,7 @@ import (
 
 type RandomPlayer struct{}
 
-func (rp *RandomPlayer) PlayCard(state SimpleState, myID int) rules.Action {
+func (rp *RandomPlayer) PlayCard(state SimpleState) rules.Action {
 	action := rules.Action{
 		PlayRecent:   rand.Int31n(1) == 0,
 		SelectedCard: rules.Card(rand.Int31n(int32(rules.Princess))),

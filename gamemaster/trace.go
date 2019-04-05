@@ -28,7 +28,7 @@ func TraceOneGame(pl players.Player, gamma float32) (Trace, error) {
 			s.OpponentCard++
 		}
 
-		action := pl.PlayCard(s, sg.ActivePlayer)
+		action := pl.PlayCard(s)
 		ss, sa := s.AsIntWithAction(action)
 		if ss < 0 || sa < 0 {
 			return Trace{}, fmt.Errorf("Negative state was calculated: %d %d", ss, sa)
