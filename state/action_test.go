@@ -13,9 +13,9 @@ func BenchmarkActionIndex(b *testing.B) {
 	high, low, opponent := rules.Priest, rules.Baron, rules.Handmaid
 	scoreDelta := -8
 	action := rules.Action{
-		PlayRecent:   true,
-		TargetPlayer: 0,
-		SelectedCard: rules.Prince,
+		PlayRecent:         true,
+		TargetPlayerOffset: 0,
+		SelectedCard:       rules.Prince,
 	}
 	for n := 0; n < b.N; n++ {
 		ActionIndex(seenCards, high, low, opponent, scoreDelta, action)
@@ -41,9 +41,9 @@ func TestZeroStateFullAction(t *testing.T) {
 	high, low, opponent := rules.Guard, rules.Guard, rules.Guard
 	scoreDelta := 0
 	action := rules.Action{
-		PlayRecent:   true,
-		TargetPlayer: 0,
-		SelectedCard: rules.Princess,
+		PlayRecent:         true,
+		TargetPlayerOffset: 0,
+		SelectedCard:       rules.Princess,
 	}
 	assert.EqualValues(t, 15, ActionIndex(seenCards, high, low, opponent, scoreDelta, action))
 }
@@ -63,9 +63,9 @@ func TestFullActionStateSimpleDeck(t *testing.T) {
 	high, low, opponent := rules.Princess, rules.Countess, rules.King
 	scoreDelta := -15
 	action := rules.Action{
-		PlayRecent:   true,
-		TargetPlayer: 0,
-		SelectedCard: rules.Princess,
+		PlayRecent:         true,
+		TargetPlayerOffset: 0,
+		SelectedCard:       rules.Princess,
 	}
 	assert.EqualValues(t, 15+(16317<<4), ActionIndex(rules.Deck{}, high, low, opponent, scoreDelta, action))
 }
@@ -75,9 +75,9 @@ func TestFullActionState(t *testing.T) {
 	high, low, opponent := rules.Princess, rules.Princess, rules.Princess
 	scoreDelta := -15
 	action := rules.Action{
-		PlayRecent:   true,
-		TargetPlayer: 0,
-		SelectedCard: rules.Princess,
+		PlayRecent:         true,
+		TargetPlayerOffset: 0,
+		SelectedCard:       rules.Princess,
 	}
 	assert.EqualValues(t, ActionSpaceMagnitude-1, ActionIndex(seenCards, high, low, opponent, scoreDelta, action))
 }

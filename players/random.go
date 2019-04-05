@@ -14,7 +14,6 @@ type RandomPlayer struct{}
 func (rp *RandomPlayer) PlayCard(state rules.SimpleState, myID int) rules.Action {
 	action := rules.Action{
 		PlayRecent:   rand.Int31n(1) == 0,
-		TargetPlayer: int(rand.Int31n(1) + 1),
 		SelectedCard: rules.Card(rand.Int31n(int32(rules.Princess))),
 	}
 
@@ -26,10 +25,7 @@ func (rp *RandomPlayer) PlayCard(state rules.SimpleState, myID int) rules.Action
 	}
 
 	// This assumes 2 players
-	otherPlayer := 0
-	if myID == 0 {
-		otherPlayer = 1
-	}
+	otherPlayerOffset := 1
 
 	if playedCard == rules.Princess {
 		action.PlayRecent = !action.PlayRecent
@@ -38,22 +34,27 @@ func (rp *RandomPlayer) PlayCard(state rules.SimpleState, myID int) rules.Action
 
 	switch playedCard {
 	case rules.Guard:
-		action.TargetPlayer = otherPlayer
+		action.TargetPlayerOffset = otherPlayerOffset
 	case rules.Priest:
-		action.TargetPlayer = otherPlayer
+		action.TargetPlayerOffset = otherPlayerOffset
 	case rules.Baron:
-		action.TargetPlayer = otherPlayer
+		action.TargetPlayerOffset = otherPlayerOffset
 	case rules.Prince:
-		if otherCard == rules.Princess && action.TargetPlayer == myID {
-			action.TargetPlayer = otherPlayer
+		if otherCard == rules.Princess {
+			action.TargetPlayerOffset = otherPlayerOffset
 		} else if otherCard == rules.Countess {
 			// Nope, must play Countess
 			action.PlayRecent = !action.PlayRecent
+		} else {
+			// Okay, safe to choose random offset
+			action.TargetPlayerOffset = int(rand.Int31n(1) + 1) // This assumes two players
 		}
 	case rules.King:
 		if otherCard == rules.Countess {
 			// Nope, must play Countess
 			action.PlayRecent = !action.PlayRecent
+		} else {
+			action.TargetPlayerOffset = otherPlayerOffset
 		}
 	default:
 		// This is an error

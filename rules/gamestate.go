@@ -178,83 +178,88 @@ func (state *Gamestate) PlayCard(action Action) error {
 
 	switch state.ActivePlayerCard {
 	case Guard:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers && action.TargetPlayer != state.ActivePlayer) {
+		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			return errors.New("You must target a valid player with a Guard")
 		}
-		if state.LastPlay[action.TargetPlayer] == Handmaid {
+		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
+		if state.LastPlay[targetPlayer] == Handmaid {
 			break
 		}
-		targetCard := state.CardInHand[action.TargetPlayer]
+		targetCard := state.CardInHand[targetPlayer]
 		if targetCard == action.SelectedCard && targetCard != Guard {
-			state.eliminatePlayer(action.TargetPlayer)
+			state.eliminatePlayer(targetPlayer)
 		}
 		// Note we don't store this history, which a real player would rely upon. e.g. if I guess 4 and it's wrong, do I guess 4 again the next turn when no Handmaids have shown up? This bot would do that.
 	case Priest:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers && action.TargetPlayer != state.ActivePlayer) {
+		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			return errors.New("You must target a valid player with a Priest")
 		}
-		if state.LastPlay[action.TargetPlayer] == Handmaid {
+		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
+		if state.LastPlay[targetPlayer] == Handmaid {
 			break
 		}
-		state.KnownCards[action.TargetPlayer][state.ActivePlayer] = state.CardInHand[action.TargetPlayer]
+		state.KnownCards[targetPlayer][state.ActivePlayer] = state.CardInHand[targetPlayer]
 	case Baron:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers && action.TargetPlayer != state.ActivePlayer) {
+		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			return errors.New("You must target a valid player with a Baron")
 		}
-		if state.LastPlay[action.TargetPlayer] == Handmaid {
+		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
+		if state.LastPlay[targetPlayer] == Handmaid {
 			break
 		}
 		// Compare cards. Eliminate low. Tie does nothing
-		targetValue := int(state.CardInHand[action.TargetPlayer])
+		targetValue := int(state.CardInHand[targetPlayer])
 		activeValue := int(state.CardInHand[state.ActivePlayer])
 		switch {
 		case targetValue < activeValue:
-			state.eliminatePlayer(action.TargetPlayer)
+			state.eliminatePlayer(targetPlayer)
 		case targetValue > activeValue:
 			state.eliminatePlayer(state.ActivePlayer)
 		}
 	case Handmaid:
 		// Do nothing
 	case Prince:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers) {
+		if !(action.TargetPlayerOffset >= 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			return errors.New("You must target a valid player with a Prince")
 		}
-		if state.LastPlay[action.TargetPlayer] == Handmaid {
+		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
+		if state.LastPlay[targetPlayer] == Handmaid {
 			// If you target someone invalid, default to self.
 			// The game rules say that if everyone else has a Handmaid, you must target yourself, so this is a good default.
-			action.TargetPlayer = state.ActivePlayer
+			targetPlayer = state.ActivePlayer
 		}
-		targetCard := state.CardInHand[action.TargetPlayer]
-		state.clearKnownCard(action.TargetPlayer, targetCard)
-		state.Discards[action.TargetPlayer] = append(state.Discards[action.TargetPlayer], targetCard)
-		state.CardInHand[action.TargetPlayer] = state.Deck.Draw()
+		targetCard := state.CardInHand[targetPlayer]
+		state.clearKnownCard(targetPlayer, targetCard)
+		state.Discards[targetPlayer] = append(state.Discards[targetPlayer], targetCard)
+		state.CardInHand[targetPlayer] = state.Deck.Draw()
 
 		if targetCard == Princess {
-			state.eliminatePlayer(action.TargetPlayer)
+			state.eliminatePlayer(targetPlayer)
 		}
 	case King:
-		if !(action.TargetPlayer >= 0 && action.TargetPlayer <= state.NumPlayers) {
+		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			return errors.New("You must target a valid player with a King")
 		}
-		if state.LastPlay[action.TargetPlayer] == Handmaid {
+		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
+		if state.LastPlay[targetPlayer] == Handmaid {
 			break
 		}
 		// Trade hands
-		targetCard := state.CardInHand[action.TargetPlayer]
+		targetCard := state.CardInHand[targetPlayer]
 		activeCard := state.CardInHand[state.ActivePlayer]
-		state.CardInHand[action.TargetPlayer] = activeCard
+		state.CardInHand[targetPlayer] = activeCard
 		state.CardInHand[state.ActivePlayer] = targetCard
 		// Update knowledge
 		for i := range state.KnownCards[state.ActivePlayer] {
 			if activeCard == state.KnownCards[state.ActivePlayer][i] {
 				state.KnownCards[state.ActivePlayer][i] = targetCard
 			}
-			if targetCard == state.KnownCards[action.TargetPlayer][i] {
-				state.KnownCards[action.TargetPlayer][i] = activeCard
+			if targetCard == state.KnownCards[targetPlayer][i] {
+				state.KnownCards[targetPlayer][i] = activeCard
 			}
 		}
-		state.KnownCards[state.ActivePlayer][action.TargetPlayer] = targetCard
-		state.KnownCards[action.TargetPlayer][state.ActivePlayer] = activeCard
+		state.KnownCards[state.ActivePlayer][targetPlayer] = targetCard
+		state.KnownCards[targetPlayer][state.ActivePlayer] = activeCard
 	case Countess:
 		// Do nothing
 	case Princess:
@@ -272,6 +277,10 @@ func (state *Gamestate) PlayCard(action Action) error {
 	}
 
 	return nil
+}
+
+func (state *Gamestate) getTargetIDFromOffset(offset int) int {
+	return (state.ActivePlayer + offset) % state.NumPlayers
 }
 
 // incrementPlayerTurn increments the player turn. It assumes there are at least 2 active players

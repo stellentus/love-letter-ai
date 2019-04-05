@@ -26,9 +26,9 @@ func TestPlayingPrincessIdiot(t *testing.T) {
 
 	// Play the Princess
 	err := state.PlayCard(Action{
-		PlayRecent:   false,
-		TargetPlayer: 1,
-		SelectedCard: None,
+		PlayRecent:         false,
+		TargetPlayerOffset: 1,
+		SelectedCard:       None,
 	})
 	assert.NoError(t, err)
 
@@ -50,9 +50,9 @@ func TestPlayingPrince(t *testing.T) {
 
 	// Play the Prince on the other player
 	err := state.PlayCard(Action{
-		PlayRecent:   false,
-		TargetPlayer: 1,
-		SelectedCard: None,
+		PlayRecent:         false,
+		TargetPlayerOffset: 1,
+		SelectedCard:       None,
 	})
 	assert.NoError(t, err)
 
@@ -77,9 +77,9 @@ func TestPlayingGuardBadGuess(t *testing.T) {
 
 	// Play the Guard on the other player
 	err := state.PlayCard(Action{
-		PlayRecent:   true,
-		TargetPlayer: 1,
-		SelectedCard: Handmaid, // incorrect guess
+		PlayRecent:         true,
+		TargetPlayerOffset: 1,
+		SelectedCard:       Handmaid, // incorrect guess
 	})
 	assert.NoError(t, err)
 
@@ -104,9 +104,9 @@ func TestPlayingGuardGoodGuess(t *testing.T) {
 
 	// Play the Guard on the other player
 	err := state.PlayCard(Action{
-		PlayRecent:   true,
-		TargetPlayer: 1,
-		SelectedCard: Countess, // correct guess
+		PlayRecent:         true,
+		TargetPlayerOffset: 1,
+		SelectedCard:       Countess, // correct guess
 	})
 	assert.NoError(t, err)
 
@@ -128,9 +128,9 @@ func TestPlayingPrinceOnPrincess(t *testing.T) {
 
 	// Play the Prince on the other player
 	err := state.PlayCard(Action{
-		PlayRecent:   false,
-		TargetPlayer: 1,
-		SelectedCard: None,
+		PlayRecent:         false,
+		TargetPlayerOffset: 1,
+		SelectedCard:       None,
 	})
 	assert.NoError(t, err)
 
@@ -152,9 +152,9 @@ func TestPlayingPrinceWithCountess(t *testing.T) {
 
 	// Play the Prince on the other player, even though we MUST play the countess
 	err := state.PlayCard(Action{
-		PlayRecent:   false,
-		TargetPlayer: 1,
-		SelectedCard: None,
+		PlayRecent:         false,
+		TargetPlayerOffset: 1,
+		SelectedCard:       None,
 	})
 	assert.NoError(t, err)
 
@@ -177,9 +177,9 @@ func TestPlayingCountessCorrectly(t *testing.T) {
 
 	// Play the Prince on the other player, even though we MUST play the countess
 	err := state.PlayCard(Action{
-		PlayRecent:   true,
-		TargetPlayer: 1,
-		SelectedCard: None,
+		PlayRecent:         true,
+		TargetPlayerOffset: 1,
+		SelectedCard:       None,
 	})
 	assert.NoError(t, err)
 
@@ -205,9 +205,9 @@ func TestPlayingBaronWithCountessVsGuard(t *testing.T) {
 	state.ActivePlayerCard = Countess
 
 	err := state.PlayCard(Action{
-		PlayRecent:   false,
-		TargetPlayer: 1,
-		SelectedCard: None,
+		PlayRecent:         false,
+		TargetPlayerOffset: 1,
+		SelectedCard:       None,
 	})
 	assert.NoError(t, err)
 
@@ -228,9 +228,9 @@ func TestPlayingBaronWithPriestVsKing(t *testing.T) {
 	state.ActivePlayerCard = Baron
 
 	err := state.PlayCard(Action{
-		PlayRecent:   true,
-		TargetPlayer: 1,
-		SelectedCard: None,
+		PlayRecent:         true,
+		TargetPlayerOffset: 1,
+		SelectedCard:       None,
 	})
 	assert.NoError(t, err)
 
@@ -251,9 +251,9 @@ func TestAlmostEmptyDeck(t *testing.T) {
 	state.ActivePlayer = 1
 
 	err := state.PlayCard(Action{
-		PlayRecent:   true,
-		TargetPlayer: 0,
-		SelectedCard: Handmaid,
+		PlayRecent:         true,
+		TargetPlayerOffset: 1,
+		SelectedCard:       Handmaid,
 	})
 	assert.NoError(t, err)
 
@@ -276,9 +276,9 @@ func TestLastPlay(t *testing.T) {
 	state.ActivePlayer = 1
 
 	err := state.PlayCard(Action{
-		PlayRecent:   true,
-		TargetPlayer: 0,
-		SelectedCard: Handmaid,
+		PlayRecent:         true,
+		TargetPlayerOffset: 1,
+		SelectedCard:       Handmaid,
 	})
 	assert.NoError(t, err)
 
