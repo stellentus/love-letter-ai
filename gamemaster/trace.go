@@ -28,12 +28,13 @@ func TraceOneGame(pl players.Player, gamma float32) (Trace, error) {
 			s.OpponentCard++
 		}
 
+		action := pl.PlayCard(s, sg.ActivePlayer)
 		ss := state.Index(s.Discards, s.RecentDraw, s.OldCard, s.OpponentCard, s.ScoreDiff)
 		if ss < 0 {
 			return Trace{}, fmt.Errorf("Negative state was calculated: %d", ss)
 		}
 		tr.States = append(tr.States, ss)
-		if err := sg.PlayCard(pl.PlayCard(s, sg.ActivePlayer)); err != nil {
+		if err := sg.PlayCard(action); err != nil {
 			return Trace{}, fmt.Errorf("Game failed: %+v", sg)
 		}
 	}
