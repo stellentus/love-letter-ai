@@ -23,20 +23,24 @@ func (vf *ValueFunction) Update(pl players.Player) {
 	}
 
 	for _, si := range tr.StateInfos {
-		s := si.State
-		if si.Won {
-			vf[s].sum++
-		}
-		vf[s].count++
-
-		// Check for overflow
-		if vf[s].count == 0xFFFF {
-			vf[s].sum /= 2
-			vf[s].count /= 2
-		}
+		vf.SaveState(si)
 	}
 }
 
 func (vf *ValueFunction) Value(state int) float32 {
 	return float32(vf[state].sum) / float32(vf[state].count)
+}
+
+func (vf *ValueFunction) SaveState(si gamemaster.StateInfo) {
+	s := si.State
+	if si.Won {
+		vf[s].sum++
+	}
+	vf[s].count++
+
+	// Check for overflow
+	if vf[s].count == 0xFFFF {
+		vf[s].sum /= 2
+		vf[s].count /= 2
+	}
 }
