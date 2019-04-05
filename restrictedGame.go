@@ -22,12 +22,12 @@ func main() {
 	}
 
 	for i := 0; i < 20; i++ {
-		states, _, winner, err := gamemaster.TraceOneGame(&pl, gamma)
+		tr, err := gamemaster.TraceOneGame(&pl, gamma)
 		if err != nil {
 			panic(err.Error())
 		}
-		fmt.Println("Winner:", winner)
-		for _, v := range states {
+		fmt.Println("Winner:", tr.Winner)
+		for _, v := range tr.States {
 			fmt.Printf("    % 8d: %0.3f\n", v, vf.Value(v))
 		}
 	}

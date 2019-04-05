@@ -15,13 +15,13 @@ type ValueFunction [state.SpaceMagnitude]Value
 type Action [state.SpaceMagnitude]uint8
 
 func (vf *ValueFunction) Update(pl players.Player, gamma float32) {
-	states, rets, _, err := gamemaster.TraceOneGame(pl, gamma)
+	tr, err := gamemaster.TraceOneGame(pl, gamma)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	for i, s := range states {
-		vf[s].sum += rets[i]
+	for i, s := range tr.States {
+		vf[s].sum += tr.Returns[i]
 		vf[s].count++
 	}
 }

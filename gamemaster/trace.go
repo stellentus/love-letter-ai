@@ -7,15 +7,21 @@ import (
 	"love-letter-ai/state"
 )
 
+type Trace struct {
+	States  []int
+	Returns []float32
+	Winner  int
+}
+
 // TraceOneGame returns the states for one gameplay played by the provided player pl.
-// The return values are a slice of states, a slice of returns, the index of the winning player, and an error.
-func TraceOneGame(pl players.Player, gamma float32) ([]int, []float32, int, error) {
+func TraceOneGame(pl players.Player, gamma float32) (Trace, error) {
 	sg, err := rules.NewGame(2)
 	if err != nil {
-		return nil, nil, 0, err
+		return Trace{}, err
 	}
 
-	states := make([]int, 0, 15)
+	tr := Trace{States: make([]int, 0, 15)}
+
 	for !sg.GameEnded {
 		s := sg.AsSimpleState()
 		if s.OpponentCard == 0 {
@@ -24,24 +30,25 @@ func TraceOneGame(pl players.Player, gamma float32) ([]int, []float32, int, erro
 
 		ss := state.Index(s.Discards, s.RecentDraw, s.OldCard, s.OpponentCard, s.ScoreDiff)
 		if ss < 0 {
-			return nil, nil, 0, fmt.Errorf("Negative state was calculated: %d", ss)
+			return Trace{}, fmt.Errorf("Negative state was calculated: %d", ss)
 		}
-		states = append(states, ss)
+		tr.States = append(tr.States, ss)
 		if err := sg.PlayCard(pl.PlayCard(s, sg.ActivePlayer)); err != nil {
-			return nil, nil, 0, fmt.Errorf("Game failed: %+v", sg)
+			return Trace{}, fmt.Errorf("Game failed: %+v", sg)
 		}
 	}
 
-	numPlays := len(states)
-	rets := make([]float32, numPlays)
+	numPlays := len(tr.States)
+	tr.Returns = make([]float32, numPlays)
 	thisRet := float32(1.0)
 	for i := numPlays - 1; i >= 0; i-- {
 		// Leave ret[i] as zero unless this was the winner
 		if i%2 == sg.Winner {
-			rets[i] = thisRet
+			tr.Returns[i] = thisRet
 			thisRet *= gamma // only scale by gamma for actions taken by this player
 		}
 	}
+	tr.Winner = sg.Winner
 
-	return states, rets, sg.Winner, nil
+	return tr, nil
 }
