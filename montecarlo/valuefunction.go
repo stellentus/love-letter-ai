@@ -24,7 +24,7 @@ func (vf *ValueFunction) Train(pl players.Player, episodes int) {
 		}
 		vf.Update(pl)
 	}
-	fmt.Println("100.0%% complete")
+	fmt.Println("100.0% complete")
 }
 
 func (vf *ValueFunction) Update(pl players.Player) {
