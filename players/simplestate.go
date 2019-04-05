@@ -1,25 +1,27 @@
-package rules
+package players
+
+import "love-letter-ai/rules"
 
 // SimpleState provides a simplified state. It is only valid for 2 players.
 type SimpleState struct {
 	// Discards is all of the cards discarded so far (unsorted, unattributed)
-	Discards Deck
+	Discards rules.Deck
 
 	// RecentDraw is the card the current player just drew
-	RecentDraw Card
+	RecentDraw rules.Card
 
 	// OldCard is the card the current player already had
-	OldCard Card
+	OldCard rules.Card
 
 	// OpponentCard is the card most recently played by the opponent
-	OpponentCard Card
+	OpponentCard rules.Card
 
 	// ScoreDiff is the current player's score lead compared to the opponent
 	ScoreDiff int
 }
 
-// SimpleState converts a Gamestate to a SimpleState
-func (state *Gamestate) AsSimpleState() SimpleState {
+// SimpleState converts a rules.Gamestate to a SimpleState
+func NewSimpleState(state rules.Gamestate) SimpleState {
 	simple := SimpleState{}
 
 	simple.Discards = state.AllDiscards()

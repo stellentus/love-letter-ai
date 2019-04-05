@@ -24,7 +24,7 @@ func TraceOneGame(pl players.Player, gamma float32) (Trace, error) {
 	tr := Trace{States: make([]int, 0, 15)}
 
 	for !sg.GameEnded {
-		s := sg.AsSimpleState()
+		s := players.NewSimpleState(sg)
 		if s.OpponentCard == 0 {
 			s.OpponentCard++
 		}

@@ -29,7 +29,7 @@ func New(players []players.Player) (Gamemaster, error) {
 }
 
 func (master *Gamemaster) TakeTurn() error {
-	action := master.Players[master.ActivePlayer].PlayCard(master.Gamestate.AsSimpleState(), master.ActivePlayer)
+	action := master.Players[master.ActivePlayer].PlayCard(players.NewSimpleState(master.Gamestate), master.ActivePlayer)
 	return master.PlayCard(action)
 }
 
