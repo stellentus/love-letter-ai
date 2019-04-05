@@ -52,7 +52,7 @@ func traceGame() ([]int, int) {
 
 		ss := montecarlo.IndexOfState(s.Discards, s.RecentDraw, s.OldCard, s.OpponentCard, s.ScoreDiff)
 		if ss < 0 {
-			panic("Huh")
+			panic(fmt.Sprintf("Negative state was calculated: %d", ss))
 		}
 		states = append(states, ss)
 		if err := sg.PlayCard(p.PlayCard(s, sg.ActivePlayer)); err != nil {
