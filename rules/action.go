@@ -26,6 +26,21 @@ func (act Action) AsInt() int {
 	return retVal
 }
 
+// ActionFromInt reverses action.AsInt, but only for the 4 bits that compose the action. Other bits are ignored.
+// This only works for a 2-player game.
+func ActionFromInt(st int) Action {
+	act := Action{}
+	if st%2 == 1 {
+		act.PlayRecent = true
+	}
+	st = (st & 0xF) >> 1 // Now this is the TargetPlayer or SelectedCard
+	if st == 1 {
+		act.TargetPlayer = 1
+	}
+	act.SelectedCard = Card(st + 1)
+	return act
+}
+
 func (card Card) PossibleActions(isRecent bool, opponentIdx int) []Action {
 	switch card {
 	case Guard:
