@@ -28,8 +28,7 @@ func TraceOneGame(pl players.Player, gamma float32) ([]int, []float32, int, erro
 		}
 		states = append(states, ss)
 		if err := sg.PlayCard(pl.PlayCard(s, sg.ActivePlayer)); err != nil {
-			fmt.Printf("Game failed: %+v\n", sg)
-			panic(err)
+			return nil, nil, 0, fmt.Errorf("Game failed: %+v", sg)
 		}
 	}
 
