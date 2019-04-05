@@ -18,7 +18,7 @@ func main() {
 
 	fmt.Println("Running...")
 	for i := 0; i < rounds; i++ {
-		updateValueFunction(&vf, &pl)
+		vf.Update(&pl, gamma)
 	}
 
 	for i := 0; i < 20; i++ {
@@ -30,22 +30,5 @@ func main() {
 		for _, v := range states {
 			fmt.Printf("    % 8d: %0.3f\n", v, vf[v])
 		}
-	}
-}
-
-func updateValueFunction(vf *montecarlo.ValueFunction, pl players.Player) {
-	states, winner, err := gamemaster.TraceOneGame(pl)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	p1v, p2v := float32(1.0), float32(0.0)
-	if winner != 0 {
-		p1v, p2v = 0.0, 1.0
-	}
-
-	for _, s := range states {
-		vf[s] += (p1v - vf[s]) * gamma
-		p1v, p2v = p2v, p1v
 	}
 }
