@@ -17,8 +17,12 @@ func main() {
 
 	fmt.Println("Running...")
 	for i := 0; i < rounds; i++ {
+		if (i % 100000) == 0 {
+			fmt.Printf("% 2.2f%% complete\r", float32(i)/rounds*100)
+		}
 		vf.Update(&pl)
 	}
+	fmt.Println("100.0%% complete")
 
 	for i := 0; i < 20; i++ {
 		tr, err := gamemaster.TraceOneGame(&pl)
