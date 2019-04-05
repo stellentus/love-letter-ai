@@ -21,6 +21,10 @@ func NewQPlayer(epsilon float32) *QPlayer {
 	}
 }
 
+func (qp *QPlayer) SetEpsilon(epsilon float32) {
+	qp.epsilon = epsilon
+}
+
 func (qp *QPlayer) TrainWithPlayerPolicy(episodes int, pl players.Player) {
 	for i := 0; i < episodes; i++ {
 		if (i % 100000) == 0 {

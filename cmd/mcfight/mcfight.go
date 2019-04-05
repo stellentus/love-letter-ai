@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	rounds  = 1000000000
-	epsilon = 0.05
+	rounds = 1000000000
 )
 
 func main() {
+	epsilon := float32(0.3)
 	pl := montecarlo.NewQPlayer(epsilon)
 
 	fmt.Println("Running vs random...")
@@ -21,11 +21,18 @@ func main() {
 	fightRandom(1000, pl)
 
 	for j := 0; j < 5; j++ {
+		epsilon *= 0.7
+		pl.SetEpsilon(epsilon)
 		fmt.Printf("Running vs self %d...\n", j+1)
 		pl.TrainWithSelfPolicy(rounds)
 		printTraces(20, pl)
 		fightRandom(1000, pl)
 	}
+
+	pl.SetEpsilon(0.0)
+	fmt.Printf("Playing greedily...\n")
+	printTraces(20, pl)
+	fightRandom(1000, pl)
 }
 
 func printTraces(n int, pl *montecarlo.QPlayer) {
