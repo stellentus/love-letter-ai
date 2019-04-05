@@ -1,4 +1,4 @@
-package montecarlo
+package state
 
 import (
 	"testing"
@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func BenchmarkIndexOfState(b *testing.B) {
+func BenchmarkIndex(b *testing.B) {
 	seenCards := rules.DefaultDeck()
 	high, low, opponent := rules.Priest, rules.Baron, rules.Handmaid
 	scoreDelta := -8
 	for n := 0; n < b.N; n++ {
-		IndexOfState(seenCards, high, low, opponent, scoreDelta)
+		Index(seenCards, high, low, opponent, scoreDelta)
 	}
 }
 
@@ -24,20 +24,20 @@ func TestZeroState(t *testing.T) {
 	}
 	high, low, opponent := rules.Guard, rules.Guard, rules.Guard
 	scoreDelta := 0
-	assert.EqualValues(t, 0, IndexOfState(seenCards, high, low, opponent, scoreDelta))
+	assert.EqualValues(t, 0, Index(seenCards, high, low, opponent, scoreDelta))
 }
 
 func TestFullStateSimpleDeck(t *testing.T) {
 	high, low, opponent := rules.Princess, rules.Countess, rules.King
 	scoreDelta := -15
-	assert.EqualValues(t, 16317, IndexOfState(rules.Deck{}, high, low, opponent, scoreDelta))
+	assert.EqualValues(t, 16317, Index(rules.Deck{}, high, low, opponent, scoreDelta))
 }
 
 func TestFullState(t *testing.T) {
 	seenCards := rules.DefaultDeck()
 	high, low, opponent := rules.Princess, rules.Princess, rules.Princess
 	scoreDelta := -15
-	assert.EqualValues(t, StateSpaceMagnitude-1, IndexOfState(seenCards, high, low, opponent, scoreDelta))
+	assert.EqualValues(t, SpaceMagnitude-1, Index(seenCards, high, low, opponent, scoreDelta))
 }
 
 func TestScoreDelta(t *testing.T) {

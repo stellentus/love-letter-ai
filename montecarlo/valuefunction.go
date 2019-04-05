@@ -1,7 +1,9 @@
 package montecarlo
 
-type ValueFunction [StateSpaceMagnitude]float32
-type Action [StateSpaceMagnitude]uint8
+import "love-letter-ai/state"
+
+type ValueFunction [state.SpaceMagnitude]float32
+type Action [state.SpaceMagnitude]uint8
 
 func EvenValueFunction() ValueFunction {
 	vf := ValueFunction{}

@@ -5,6 +5,7 @@ import (
 	"love-letter-ai/montecarlo"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
+	"love-letter-ai/state"
 )
 
 const (
@@ -43,7 +44,7 @@ func traceGame() ([]int, int) {
 			s.OpponentCard++
 		}
 
-		ss := montecarlo.IndexOfState(s.Discards, s.RecentDraw, s.OldCard, s.OpponentCard, s.ScoreDiff)
+		ss := state.Index(s.Discards, s.RecentDraw, s.OldCard, s.OpponentCard, s.ScoreDiff)
 		if ss < 0 {
 			panic(fmt.Sprintf("Negative state was calculated: %d", ss))
 		}

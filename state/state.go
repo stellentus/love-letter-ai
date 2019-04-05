@@ -1,16 +1,16 @@
-package montecarlo
+package state
 
 import "love-letter-ai/rules"
 
 const (
-	// StateSpaceMagnitude represents the number of possible states considered.
+	// SpaceMagnitude represents the number of possible states considered.
 	// Note that some of these states are impossible to achieve in real gameplay.
-	StateSpaceMagnitude = deckSpaceMagnitude * 32 * 512 // deck*score*hand bits equals the size of the statespace
-	deckSpaceMagnitude  = 6 * 3 * 3 * 3 * 3 * 2 * 2 * 2
+	SpaceMagnitude     = deckSpaceMagnitude * 32 * 512 // deck*score*hand bits equals the size of the statespace
+	deckSpaceMagnitude = 6 * 3 * 3 * 3 * 3 * 2 * 2 * 2
 )
 
-// Index state returns a unique number between 0 and StateSpaceMagnitude-1 for the given state.
-func IndexOfState(seenCards rules.Deck, recent, old, opponent rules.Card, scoreDelta int) int {
+// Index returns a unique number between 0 and SpaceMagnitude-1 for the given state.
+func Index(seenCards rules.Deck, recent, old, opponent rules.Card, scoreDelta int) int {
 	return (((deckValue(seenCards) << 5) + scoreValue(scoreDelta)) << 9) + handValue(recent, old, opponent)
 }
 
