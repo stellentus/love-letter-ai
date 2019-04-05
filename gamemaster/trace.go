@@ -8,11 +8,11 @@ import (
 )
 
 // TraceOneGame returns the states for one gameplay played by the provided player pl.
-// The return values are a slice of states, the index of the winning player, and an error.
-func TraceOneGame(pl players.Player) ([]int, int, error) {
+// The return values are a slice of states, a slice of returns, the index of the winning player, and an error.
+func TraceOneGame(pl players.Player, gamma float32) ([]int, []float32, int, error) {
 	sg, err := rules.NewGame(2)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, 0, err
 	}
 
 	states := make([]int, 0, 15)
@@ -24,7 +24,7 @@ func TraceOneGame(pl players.Player) ([]int, int, error) {
 
 		ss := state.Index(s.Discards, s.RecentDraw, s.OldCard, s.OpponentCard, s.ScoreDiff)
 		if ss < 0 {
-			return nil, 0, fmt.Errorf("Negative state was calculated: %d", ss)
+			return nil, nil, 0, fmt.Errorf("Negative state was calculated: %d", ss)
 		}
 		states = append(states, ss)
 		if err := sg.PlayCard(pl.PlayCard(s, sg.ActivePlayer)); err != nil {
@@ -33,5 +33,16 @@ func TraceOneGame(pl players.Player) ([]int, int, error) {
 		}
 	}
 
-	return states, sg.Winner, nil
+	numPlays := len(states)
+	rets := make([]float32, numPlays)
+	thisRet := float32(1.0)
+	for i := numPlays - 1; i >= 0; i-- {
+		// Leave ret[i] as zero unless this was the winner
+		if i%2 == sg.Winner {
+			rets[i] = thisRet
+			thisRet *= gamma // only scale by gamma for actions taken by this player
+		}
+	}
+
+	return states, rets, sg.Winner, nil
 }

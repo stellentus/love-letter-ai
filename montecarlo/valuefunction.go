@@ -18,7 +18,7 @@ func EvenValueFunction() ValueFunction {
 }
 
 func (vf *ValueFunction) Update(pl players.Player, gamma float32) {
-	states, winner, err := gamemaster.TraceOneGame(pl)
+	states, _, winner, err := gamemaster.TraceOneGame(pl, gamma)
 	if err != nil {
 		panic(err.Error())
 	}

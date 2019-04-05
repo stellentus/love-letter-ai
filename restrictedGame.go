@@ -22,7 +22,7 @@ func main() {
 	}
 
 	for i := 0; i < 20; i++ {
-		states, winner, err := gamemaster.TraceOneGame(&pl)
+		states, _, winner, err := gamemaster.TraceOneGame(&pl, gamma)
 		if err != nil {
 			panic(err.Error())
 		}
