@@ -38,6 +38,64 @@ func (vf *ValueFunction) Update(pl players.Player) {
 	}
 }
 
+const numChans = 8
+const numGenThreads = 8
+
+// Update runs 8*episodes
+func (vf *ValueFunction) ThreadedTrain(pl players.Player, episodes int) {
+	chs := make([]chan gamemaster.StateInfo, numChans)
+	doneStoring := make(chan bool, numChans)
+
+	for i := range chs {
+		ch := make(chan gamemaster.StateInfo, 128)
+		chs[i] = ch
+
+		go func() {
+			for true {
+				si, more := <-ch
+
+				if !more {
+					doneStoring <- true
+					return
+				}
+
+				vf.SaveState(si)
+			}
+		}()
+	}
+
+	// Launch some threads to generate data
+	doneGenerating := make(chan bool, numGenThreads)
+	for i := 0; i < numGenThreads; i++ {
+		go func() {
+			for i := 0; i < episodes; i++ {
+				err := gamemaster.TraceIntoChannels(pl, chs)
+				if err != nil {
+					panic(err.Error())
+				}
+			}
+			doneGenerating <- true
+		}()
+	}
+
+	// Wait for the data to all be generated
+	for i := 0; i < numGenThreads; i++ {
+		<-doneGenerating
+	}
+	close(doneGenerating)
+
+	// Now close all of the generating channels because generation is done
+	for _, ch := range chs {
+		close(ch)
+	}
+
+	// Wait for the data to all be saved
+	for i := 0; i < numChans; i++ {
+		<-doneStoring
+	}
+	close(doneStoring)
+}
+
 func (vf *ValueFunction) Value(state int) float32 {
 	return float32(vf[state].sum) / float32(vf[state].count)
 }

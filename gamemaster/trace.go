@@ -54,3 +54,18 @@ func TraceOneGame(pl players.Player) (Trace, error) {
 
 	return tr, nil
 }
+
+// TraceIntoChannels calculates the states for one gameplay played by the provided player pl.
+// It sends the results into the provided channels. The slice of channels should be of length 8.
+func TraceIntoChannels(pl players.Player, chs []chan StateInfo) error {
+	tr, err := TraceOneGame(pl)
+	if err != nil {
+		return err
+	}
+
+	for _, si := range tr.StateInfos {
+		chs[si.State>>(12+5+9-3)] <- si
+	}
+
+	return nil
+}
