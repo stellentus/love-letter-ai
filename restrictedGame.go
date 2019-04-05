@@ -12,13 +12,6 @@ const (
 	gamma  = 0.05
 )
 
-var simpleDeck = rules.Deck{
-	rules.Guard:    3,
-	rules.Handmaid: 2,
-	rules.Prince:   2,
-	rules.Princess: 1,
-}
-
 func main() {
 	vf := montecarlo.EvenValueFunction()
 
