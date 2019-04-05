@@ -9,12 +9,12 @@ import (
 type Trace struct {
 	States       []int
 	ActionStates []int
-	Returns      []float32
+	Returns      []int
 	Winner       int
 }
 
 // TraceOneGame returns the states for one gameplay played by the provided player pl.
-func TraceOneGame(pl players.Player, gamma float32) (Trace, error) {
+func TraceOneGame(pl players.Player) (Trace, error) {
 	sg, err := rules.NewGame(2)
 	if err != nil {
 		return Trace{}, err
@@ -41,13 +41,11 @@ func TraceOneGame(pl players.Player, gamma float32) (Trace, error) {
 	}
 
 	numPlays := len(tr.States)
-	tr.Returns = make([]float32, numPlays)
-	thisRet := float32(1.0)
+	tr.Returns = make([]int, numPlays)
 	for i := numPlays - 1; i >= 0; i-- {
 		// Leave ret[i] as zero unless this was the winner
 		if i%2 == sg.Winner {
-			tr.Returns[i] = thisRet
-			thisRet *= gamma // only scale by gamma for actions taken by this player
+			tr.Returns[i] = 1
 		}
 	}
 	tr.Winner = sg.Winner

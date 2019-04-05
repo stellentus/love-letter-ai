@@ -9,7 +9,6 @@ import (
 
 const (
 	rounds = 1000000000
-	gamma  = 0.95
 )
 
 func main() {
@@ -18,11 +17,11 @@ func main() {
 
 	fmt.Println("Running...")
 	for i := 0; i < rounds; i++ {
-		vf.Update(&pl, gamma)
+		vf.Update(&pl)
 	}
 
 	for i := 0; i < 20; i++ {
-		tr, err := gamemaster.TraceOneGame(&pl, gamma)
+		tr, err := gamemaster.TraceOneGame(&pl)
 		if err != nil {
 			panic(err.Error())
 		}
