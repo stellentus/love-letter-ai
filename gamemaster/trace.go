@@ -8,9 +8,10 @@ import (
 )
 
 type Trace struct {
-	States  []int
-	Returns []float32
-	Winner  int
+	States       []int
+	ActionStates []int
+	Returns      []float32
+	Winner       int
 }
 
 // TraceOneGame returns the states for one gameplay played by the provided player pl.
@@ -29,11 +30,12 @@ func TraceOneGame(pl players.Player, gamma float32) (Trace, error) {
 		}
 
 		action := pl.PlayCard(s, sg.ActivePlayer)
-		ss := state.Index(s.Discards, s.RecentDraw, s.OldCard, s.OpponentCard, s.ScoreDiff)
-		if ss < 0 {
-			return Trace{}, fmt.Errorf("Negative state was calculated: %d", ss)
+		ss, sa := state.Indices(s.Discards, s.RecentDraw, s.OldCard, s.OpponentCard, s.ScoreDiff, action)
+		if ss < 0 || sa < 0 {
+			return Trace{}, fmt.Errorf("Negative state was calculated: %d %d", ss, sa)
 		}
 		tr.States = append(tr.States, ss)
+		tr.ActionStates = append(tr.ActionStates, sa)
 		if err := sg.PlayCard(action); err != nil {
 			return Trace{}, fmt.Errorf("Game failed: %+v", sg)
 		}
