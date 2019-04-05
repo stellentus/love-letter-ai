@@ -20,8 +20,8 @@ var tests = []struct {
 	{"Target player", Action{PlayRecent: true, TargetPlayer: 1}, 3},
 	{"Nearly maximal", Action{PlayRecent: false, SelectedCard: Princess}, 14},
 
-	// When TargetPlayer and SelectedCard are both set, ignore SelectedCard for conversion
-	{"Conflict input", Action{PlayRecent: true, TargetPlayer: 1, SelectedCard: Princess}, 3},
+	// When TargetPlayer and SelectedCard are both set, ignore TargetPlayer for conversion (since this is a guard targeting a specific card).
+	{"Conflict input", Action{PlayRecent: true, TargetPlayer: 1, SelectedCard: Princess}, 15},
 
 	// Note these two states give the same output; that's okay because these occur when the played card is different, so these actions show up in different contexts.
 	{"Target 1 equals Selected Priest", Action{PlayRecent: false, TargetPlayer: 1}, 2},

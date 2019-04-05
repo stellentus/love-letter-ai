@@ -18,10 +18,10 @@ func (act Action) AsInt() int {
 	if act.PlayRecent {
 		retVal = 1
 	}
-	if act.TargetPlayer != 0 {
-		retVal += 2 * act.TargetPlayer
-	} else if act.SelectedCard != None {
+	if act.SelectedCard != None {
 		retVal += 2 * (int(act.SelectedCard) - 1)
+	} else if act.TargetPlayer != 0 {
+		retVal += 2 * act.TargetPlayer
 	}
 	return retVal
 }
