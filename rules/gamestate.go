@@ -120,11 +120,6 @@ func (state *Gamestate) AllDiscards() Deck {
 
 func (state *Gamestate) eliminatePlayer(player int) {
 	state.EliminatedPlayers[player] = true
-	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.CardInHand[player])
-	state.CardInHand[player] = None
-	for i := range state.KnownCards[player] {
-		state.KnownCards[player][i] = None
-	}
 
 	pInGame := 0
 	remainingPlayer := 0
@@ -137,6 +132,14 @@ func (state *Gamestate) eliminatePlayer(player int) {
 	if pInGame == 1 {
 		state.Winner = remainingPlayer
 		state.GameEnded = true
+	}
+
+	if state.CardInHand[player] != None {
+		state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.CardInHand[player])
+		state.CardInHand[player] = None
+	}
+	for i := range state.KnownCards[player] {
+		state.KnownCards[player][i] = None
 	}
 }
 
@@ -229,13 +232,14 @@ func (state *Gamestate) PlayCard(action Action) error {
 			targetPlayer = state.ActivePlayer
 		}
 		targetCard := state.CardInHand[targetPlayer]
-		state.clearKnownCard(targetPlayer, targetCard)
-		state.Discards[targetPlayer] = append(state.Discards[targetPlayer], targetCard)
-		state.CardInHand[targetPlayer] = state.Deck.Draw()
-
 		if targetCard == Princess {
+			// Do this first to update FinalState.
 			state.eliminatePlayer(targetPlayer)
+		} else {
+			state.Discards[targetPlayer] = append(state.Discards[targetPlayer], targetCard)
+			state.CardInHand[targetPlayer] = state.Deck.Draw()
 		}
+		state.clearKnownCard(targetPlayer, targetCard)
 	case King:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			return errors.New("You must target a valid player with a King")
