@@ -5,6 +5,7 @@ import (
 	"love-letter-ai/gamemaster"
 	"love-letter-ai/montecarlo"
 	"love-letter-ai/players"
+	"love-letter-ai/rules"
 )
 
 const (
@@ -36,15 +37,22 @@ func main() {
 }
 
 func printTraces(n int, pl *montecarlo.QPlayer) {
+	fists := make([]rules.FinalState, 0, n)
 	for i := 0; i < n; i++ {
 		tr, err := gamemaster.TraceOneGame(&players.RandomPlayer{})
 		if err != nil {
 			panic(err.Error())
 		}
-		fmt.Println("Winner:", tr.Winner)
+		fmt.Printf("Game %d winner: %d\n", i, tr.Winner)
 		for _, v := range tr.StateInfos {
-			fmt.Printf("    % 8d: %0.3f\n", v.ActionState, pl.Value(v.ActionState))
+			fmt.Printf("    %08X: %0.3f\n", v.ActionState, pl.Value(v.ActionState))
 		}
+		fists = append(fists, tr.FinalState)
+	}
+	fmt.Println("Game | Discard | InHand | Opponent | Deck | Won? ")
+	fmt.Println("-----|---------|--------|----------|------|-------")
+	for i, fist := range fists {
+		fmt.Printf(" %3d | %d       | %d      | %d        | %2d   | %t \n", i, fist.LastDiscard, fist.LastInHand, fist.OpponentInHand, fist.RemainingDeck, fist.DiscardWon)
 	}
 }
 
