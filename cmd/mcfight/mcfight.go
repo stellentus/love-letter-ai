@@ -49,28 +49,26 @@ func printTraces(n int, pl *montecarlo.QPlayer) {
 }
 
 func fightRandom(n int, pl *montecarlo.QPlayer) {
-	fmt.Printf("MC is 0; ")
-	fightPlayers(n, []players.Player{
+	fmt.Printf("MC is 0 with a win rate of % 2.1f%%\n", fightPlayers(n, []players.Player{
 		pl,
 		&players.RandomPlayer{},
-	})
-	fmt.Printf("MC is 1; ")
-	fightPlayers(n, []players.Player{
+	}))
+	fmt.Printf("MC is 1 with a win rate of % 2.1f%%\n", 100.0-fightPlayers(n, []players.Player{
 		&players.RandomPlayer{},
 		pl,
-	})
+	}))
 }
 
-func fightPlayers(n int, pls []players.Player) {
+func fightPlayers(n int, pls []players.Player) float32 {
 	// Now fight vs Random
 	gm, err := gamemaster.New(pls)
 	if err != nil {
 		panic(err)
 	}
-	winner, err := gm.PlaySeries(n)
+	wins, err := gm.PlayStatistics(n)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Player %d won %d-%d\n", winner, gm.Wins[winner], gm.Wins[(winner+1)%2])
+	return float32(wins) / float32(n) * 100.0
 }

@@ -43,7 +43,7 @@ func (master *Gamemaster) PlayGame() error {
 	return nil
 }
 
-// PlaySeries playes an entire series with the provided players, returning the id of the player who won.
+// PlaySeries plays an entire series with the provided players, returning the id of the player who won.
 // A player wins after winning gamesToWin games.
 func (master *Gamemaster) PlaySeries(gamesToWin int) (int, error) {
 	for {
@@ -60,6 +60,18 @@ func (master *Gamemaster) PlaySeries(gamesToWin int) (int, error) {
 		master.startPlayerOffset = winner
 		master.Gamestate, err = rules.NewGame(master.NumPlayers)
 	}
+}
+
+// PlayStatistics plays totalGames with the players in a fixed order, returning the number of times player 0 won.
+func (master *Gamemaster) PlayStatistics(totalGames int) (int, error) {
+	for i := 0; i < totalGames; i++ {
+		err := master.PlayGame()
+		if err != nil {
+			return 0, err
+		}
+		master.Gamestate, err = rules.NewGame(master.NumPlayers)
+	}
+	return master.Wins[0], nil
 }
 
 // HighScore returns the player who scored highest and that player's score.
