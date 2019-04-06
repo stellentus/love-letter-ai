@@ -46,6 +46,26 @@ type Gamestate struct {
 
 	// Winner is the id of the winning player. It is only valid once a player has won.
 	Winner int
+
+	// FinalState stores some state at the time the game ended. It's only set once GameEnded is true.
+	FinalState
+}
+
+type FinalState struct {
+	// LastDiscard was the card discarded by the last play of the game.
+	LastDiscard Card
+
+	// LastInHand was the card that wasn't discarded in the last play.
+	LastInHand Card
+
+	// OpponentInHand was the card the opponent held at the start of the last play.
+	OpponentInHand Card
+
+	// RemainingDeck is the number of cards remaining in the deck at the end of the game.
+	RemainingDeck int
+
+	// DiscardWon is true if the active player won.
+	DiscardWon bool
 }
 
 // NewGame deals out a new game for the specified number of players.
@@ -134,12 +154,24 @@ func (state *Gamestate) eliminatePlayer(player int) {
 		state.GameEnded = true
 	}
 
+	state.updateFinalState()
+
 	if state.CardInHand[player] != None {
 		state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.CardInHand[player])
 		state.CardInHand[player] = None
 	}
 	for i := range state.KnownCards[player] {
 		state.KnownCards[player][i] = None
+	}
+}
+
+func (state *Gamestate) updateFinalState() {
+	state.FinalState = FinalState{
+		LastDiscard:    state.ActivePlayerCard,
+		LastInHand:     state.CardInHand[state.ActivePlayer],
+		OpponentInHand: state.CardInHand[(state.ActivePlayer+1)%state.NumPlayers],
+		RemainingDeck:  state.Deck.Size(),
+		DiscardWon:     state.Winner == state.ActivePlayer,
 	}
 }
 
@@ -335,6 +367,8 @@ func (state *Gamestate) triggerGameEnd() error {
 	}
 
 	state.GameEnded = true
+
+	state.updateFinalState()
 
 	return nil
 }
