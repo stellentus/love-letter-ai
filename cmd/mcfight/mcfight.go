@@ -32,9 +32,8 @@ func main() {
 
 	pl.SetEpsilon(0.0)
 	fmt.Printf("\n\nPlaying greedily...\n")
-	rules.PrintTies = true
 	printTraces(50, pl)
-	fightRandom(100000, pl)
+	fightRandom(1000, pl)
 }
 
 func printTraces(n int, pl *montecarlo.QPlayer) {
@@ -58,18 +57,14 @@ func printTraces(n int, pl *montecarlo.QPlayer) {
 }
 
 func fightRandom(n int, pl *montecarlo.QPlayer) {
-	fmt.Printf("Game Ties (Training) %d\n", rules.Ties)
-	rules.Ties = 0
-	fmt.Printf("MC playing 1st has a win rate of %2.1f%% (%d ties)\n", fightPlayers(n, []players.Player{
+	fmt.Printf("MC playing 1st has a win rate of %2.1f%%\n", fightPlayers(n, []players.Player{
 		pl,
 		&players.RandomPlayer{},
-	}), rules.Ties)
-	rules.Ties = 0
-	fmt.Printf("MC playing 2nd has a win rate of %2.1f%% (%d ties)\n", 100.0-fightPlayers(n, []players.Player{
+	}))
+	fmt.Printf("MC playing 2nd has a win rate of %2.1f%%\n", 100.0-fightPlayers(n, []players.Player{
 		&players.RandomPlayer{},
 		pl,
-	}), rules.Ties)
-	rules.Ties = 0
+	}))
 }
 
 func fightPlayers(n int, pls []players.Player) float32 {

@@ -2,7 +2,6 @@ package rules
 
 import (
 	"errors"
-	"fmt"
 )
 
 type Gamestate struct {
@@ -51,9 +50,6 @@ type Gamestate struct {
 	// FinalState stores some state at the time the game ended. It's only set once GameEnded is true.
 	FinalState
 }
-
-var Ties = 0
-var PrintTies = false
 
 type FinalState struct {
 	// LastDiscard was the card discarded by the last play of the game.
@@ -368,11 +364,6 @@ func (state *Gamestate) triggerGameEnd() error {
 				tie = true // We don't deal with this
 			}
 		}
-		if PrintTies {
-			state.updateFinalState()
-			fmt.Println("\rTie!", state.FinalState, scores[0], scores[1])
-		}
-		Ties++
 	}
 
 	state.GameEnded = true
