@@ -14,6 +14,7 @@ type StateInfo struct {
 
 type Trace struct {
 	StateInfos []StateInfo
+	FinalState rules.FinalState
 	Winner     int
 }
 
@@ -51,6 +52,7 @@ func TraceOneGame(pl players.Player) (Trace, error) {
 		}
 	}
 	tr.Winner = sg.Winner
+	tr.FinalState = sg.FinalState
 
 	return tr, nil
 }
