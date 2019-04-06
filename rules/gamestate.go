@@ -185,9 +185,9 @@ func (state *Gamestate) clearKnownCard(player int, card Card) {
 }
 
 // PlayCard takes the provided action. Of course only the active player should call this at any time.
-func (state *Gamestate) PlayCard(action Action) error {
+func (state *Gamestate) PlayCard(action Action) {
 	if state.GameEnded {
-		return errors.New("The game has already ended")
+		return
 	}
 
 	// If the card to be played isn't the recent card, swap them to make the rest of this function easier.
@@ -203,7 +203,7 @@ func (state *Gamestate) PlayCard(action Action) error {
 		if state.ActivePlayerCard == King || state.ActivePlayerCard == Prince {
 			// Automatically eliminated for cheating. This is not the same as the rules, which simply forbid this.
 			state.eliminatePlayer(state.ActivePlayer)
-			return nil
+			return
 		}
 	}
 
@@ -214,7 +214,9 @@ func (state *Gamestate) PlayCard(action Action) error {
 	switch state.ActivePlayerCard {
 	case Guard:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
-			return errors.New("You must target a valid player with a Guard")
+			// You must target a valid player with a Guard
+			state.eliminatePlayer(state.ActivePlayer)
+			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
 		if state.LastPlay[targetPlayer] == Handmaid {
@@ -227,7 +229,9 @@ func (state *Gamestate) PlayCard(action Action) error {
 		// Note we don't store this history, which a real player would rely upon. e.g. if I guess 4 and it's wrong, do I guess 4 again the next turn when no Handmaids have shown up? This bot would do that.
 	case Priest:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
-			return errors.New("You must target a valid player with a Priest")
+			// You must target a valid player with a Priest
+			state.eliminatePlayer(state.ActivePlayer)
+			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
 		if state.LastPlay[targetPlayer] == Handmaid {
@@ -236,7 +240,9 @@ func (state *Gamestate) PlayCard(action Action) error {
 		state.KnownCards[targetPlayer][state.ActivePlayer] = state.CardInHand[targetPlayer]
 	case Baron:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
-			return errors.New("You must target a valid player with a Baron")
+			// You must target a valid player with a Baron
+			state.eliminatePlayer(state.ActivePlayer)
+			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
 		if state.LastPlay[targetPlayer] == Handmaid {
@@ -255,7 +261,9 @@ func (state *Gamestate) PlayCard(action Action) error {
 		// Do nothing
 	case Prince:
 		if !(action.TargetPlayerOffset >= 0 && action.TargetPlayerOffset < state.NumPlayers) {
-			return errors.New("You must target a valid player with a Prince")
+			// You must target a valid player with a Prince
+			state.eliminatePlayer(state.ActivePlayer)
+			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
 		if state.LastPlay[targetPlayer] == Handmaid {
@@ -274,7 +282,9 @@ func (state *Gamestate) PlayCard(action Action) error {
 		state.clearKnownCard(targetPlayer, targetCard)
 	case King:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
-			return errors.New("You must target a valid player with a King")
+			// You must target a valid player with a King
+			state.eliminatePlayer(state.ActivePlayer)
+			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
 		if state.LastPlay[targetPlayer] == Handmaid {
@@ -302,17 +312,16 @@ func (state *Gamestate) PlayCard(action Action) error {
 		// Idiot!
 		state.eliminatePlayer(state.ActivePlayer)
 	default:
-		return errors.New("An invalid card was played")
+		// An invalid card was played
+		state.eliminatePlayer(state.ActivePlayer)
 	}
 
 	if state.Deck.Size() > 1 {
 		state.ActivePlayerCard = state.Deck.Draw()
 		state.incrementPlayerTurn()
 	} else {
-		return state.triggerGameEnd()
+		state.triggerGameEnd()
 	}
-
-	return nil
 }
 
 func (state *Gamestate) getTargetIDFromOffset(offset int) int {
@@ -330,12 +339,8 @@ func (state *Gamestate) incrementPlayerTurn() {
 	}
 }
 
-func (state *Gamestate) triggerGameEnd() error {
-	if state.Deck.Size() > 1 {
-		// The deck could be size 0 if a prince was played in the last round.
-		return errors.New("The deck is too big")
-	}
-
+func (state *Gamestate) triggerGameEnd() {
+	// It's an error if the deck size is > 1, but test code in this module could confirm that never happens.
 	tie := false
 	maxCard := 0
 	state.Winner = 0
@@ -369,6 +374,4 @@ func (state *Gamestate) triggerGameEnd() error {
 	state.GameEnded = true
 
 	state.updateFinalState()
-
-	return nil
 }

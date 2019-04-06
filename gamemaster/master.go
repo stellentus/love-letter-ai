@@ -28,19 +28,16 @@ func New(players []players.Player) (Gamemaster, error) {
 	}, err
 }
 
-func (master *Gamemaster) TakeTurn() error {
+func (master *Gamemaster) TakeTurn() {
 	action := master.Players[master.ActivePlayer].PlayCard(players.NewSimpleState(master.Gamestate))
-	return master.PlayCard(action)
+	master.PlayCard(action)
 }
 
-func (master *Gamemaster) PlayGame() error {
+func (master *Gamemaster) PlayGame() {
 	for !master.GameEnded {
-		if err := master.TakeTurn(); err != nil {
-			return err
-		}
+		master.TakeTurn()
 	}
 	master.Wins[master.Winner] += 1
-	return nil
 }
 
 // PlaySeries plays an entire series with the provided players, returning the id of the player who won.
@@ -52,24 +49,26 @@ func (master *Gamemaster) PlaySeries(gamesToWin int) (int, error) {
 			return pid, nil
 		}
 
-		err := master.PlayGame()
+		master.PlayGame()
+		winner := (master.Winner - master.startPlayerOffset + master.NumPlayers) % master.NumPlayers
+		master.startPlayerOffset = winner
+		var err error
+		master.Gamestate, err = rules.NewGame(master.NumPlayers)
 		if err != nil {
 			return 0, err
 		}
-		winner := (master.Winner - master.startPlayerOffset + master.NumPlayers) % master.NumPlayers
-		master.startPlayerOffset = winner
-		master.Gamestate, err = rules.NewGame(master.NumPlayers)
 	}
 }
 
 // PlayStatistics plays totalGames with the players in a fixed order, returning the number of times player 0 won.
 func (master *Gamemaster) PlayStatistics(totalGames int) (int, error) {
 	for i := 0; i < totalGames; i++ {
-		err := master.PlayGame()
+		master.PlayGame()
+		var err error
+		master.Gamestate, err = rules.NewGame(master.NumPlayers)
 		if err != nil {
 			return 0, err
 		}
-		master.Gamestate, err = rules.NewGame(master.NumPlayers)
 	}
 	return master.Wins[0], nil
 }

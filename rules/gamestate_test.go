@@ -25,12 +25,11 @@ func TestPlayingPrincessIdiot(t *testing.T) {
 	state.ActivePlayerCard = Guard
 
 	// Play the Princess
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
 	})
-	assert.NoError(t, err)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 1, state.Winner)
@@ -49,12 +48,11 @@ func TestPlayingPrince(t *testing.T) {
 	state.ActivePlayerCard = Guard
 
 	// Play the Prince on the other player
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
 	})
-	assert.NoError(t, err)
 
 	assert.Equal(t, 1, state.ActivePlayer)         // It's the next player's turn
 	assert.Equal(t, Guard, state.CardInHand[1])    // The other player had to discard and ended up drawing a Guard (based on the seed)
@@ -76,12 +74,11 @@ func TestPlayingGuardBadGuess(t *testing.T) {
 	state.ActivePlayerCard = Guard
 
 	// Play the Guard on the other player
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       Handmaid, // incorrect guess
 	})
-	assert.NoError(t, err)
 
 	assert.Equal(t, 1, state.ActivePlayer)         // It's the next player's turn
 	assert.Equal(t, Countess, state.CardInHand[1]) // The other player did not discard the Countess
@@ -103,12 +100,11 @@ func TestPlayingGuardGoodGuess(t *testing.T) {
 	state.ActivePlayerCard = Guard
 
 	// Play the Guard on the other player
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       Countess, // correct guess
 	})
-	assert.NoError(t, err)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 0, state.Winner)
@@ -127,12 +123,11 @@ func TestPlayingPrinceOnPrincess(t *testing.T) {
 	state.ActivePlayerCard = Guard
 
 	// Play the Prince on the other player
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
 	})
-	assert.NoError(t, err)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 0, state.Winner)
@@ -151,12 +146,11 @@ func TestPlayingPrinceWithCountess(t *testing.T) {
 	state.ActivePlayerCard = Countess
 
 	// Play the Prince on the other player, even though we MUST play the countess
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
 	})
-	assert.NoError(t, err)
 
 	// ...so we lose
 	assert.True(t, state.GameEnded)
@@ -176,12 +170,11 @@ func TestPlayingCountessCorrectly(t *testing.T) {
 	state.ActivePlayerCard = Countess
 
 	// Play the Prince on the other player, even though we MUST play the countess
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
 	})
-	assert.NoError(t, err)
 
 	// .. and the game goes on
 	assert.False(t, state.GameEnded)
@@ -204,12 +197,11 @@ func TestPlayingBaronWithCountessVsGuard(t *testing.T) {
 	state.CardInHand[1] = Guard
 	state.ActivePlayerCard = Countess
 
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
 	})
-	assert.NoError(t, err)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 0, state.Winner)
@@ -227,12 +219,11 @@ func TestPlayingBaronWithPriestVsKing(t *testing.T) {
 	state.CardInHand[1] = King
 	state.ActivePlayerCard = Baron
 
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
 	})
-	assert.NoError(t, err)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 1, state.Winner)
@@ -250,12 +241,11 @@ func TestAlmostEmptyDeck(t *testing.T) {
 	state.ActivePlayerCard = Guard
 	state.ActivePlayer = 1
 
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       Handmaid,
 	})
-	assert.NoError(t, err)
 
 	assert.False(t, state.GameEnded)
 	assert.Equal(t, 0, state.ActivePlayer)          // It's the next player's turn
@@ -275,12 +265,11 @@ func TestLastPlay(t *testing.T) {
 	state.ActivePlayerCard = Guard
 	state.ActivePlayer = 1
 
-	err := state.PlayCard(Action{
+	state.PlayCard(Action{
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       Handmaid,
 	})
-	assert.NoError(t, err)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 1, state.Winner)

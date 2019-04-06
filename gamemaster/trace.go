@@ -39,9 +39,7 @@ func TraceOneGame(pl players.Player) (Trace, error) {
 			return Trace{}, fmt.Errorf("Negative state was calculated: %d %d", ss, sa)
 		}
 		tr.StateInfos = append(tr.StateInfos, StateInfo{State: ss, ActionState: sa})
-		if err := sg.PlayCard(action); err != nil {
-			return Trace{}, fmt.Errorf("Game failed: %+v", sg)
-		}
+		sg.PlayCard(action)
 	}
 
 	numPlays := len(tr.StateInfos)
