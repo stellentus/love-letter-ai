@@ -28,7 +28,7 @@ func (qp *QPlayer) SetEpsilon(epsilon float32) {
 func (qp *QPlayer) TrainWithPlayerPolicy(episodes int, pl players.Player) {
 	for i := 0; i < episodes; i++ {
 		if (i % 100000) == 0 {
-			fmt.Printf("% 2.2f%% complete\r", float32(i)/float32(episodes)*100)
+			fmt.Printf("\r%2.2f%% complete", float32(i)/float32(episodes)*100)
 		}
 
 		tr, err := gamemaster.TraceOneGame(pl)
@@ -40,7 +40,7 @@ func (qp *QPlayer) TrainWithPlayerPolicy(episodes int, pl players.Player) {
 			qp.SaveState(si)
 		}
 	}
-	fmt.Println("100.0% complete")
+	fmt.Println("\r100.0% complete")
 }
 
 func (qp *QPlayer) TrainWithSelfPolicy(episodes int) {
