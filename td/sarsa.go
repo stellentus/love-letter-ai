@@ -26,12 +26,16 @@ type sarsaLearner struct {
 const unsetState = state.SpaceMagnitude
 
 func NewSarsa(epsilon, alpha, gamma float32) *Sarsa {
-	return &Sarsa{
+	sar := &Sarsa{
 		qf:      make([]float32, state.ActionSpaceMagnitude, state.ActionSpaceMagnitude),
 		Epsilon: epsilon,
 		Alpha:   alpha,
 		Gamma:   gamma,
 	}
+	for i := range sar.qf {
+		sar.qf[i] = 0.5
+	}
+	return sar
 }
 
 func (sarsa *Sarsa) NewPlayer() players.Player {
