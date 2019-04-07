@@ -27,6 +27,7 @@ const (
 	unsetState   = state.SpaceMagnitude
 	winReward    = 100
 	stupidReward = -100
+	noReward     = 0
 )
 
 func NewSarsa(epsilon, alpha, gamma float32) *Sarsa {
@@ -91,12 +92,12 @@ func (sarsa *Sarsa) Train(episodes int) {
 		if sa < 0 {
 			panic(fmt.Sprintf("Negative state was calculated: %d", sa))
 		}
-		pls[sg.Winner].updateLearning(sg.GameEnded, sa, 1.0)
+		pls[sg.Winner].updateLearning(sg.GameEnded, sa, winReward)
 		if sg.LossWasStupid {
 			// This only happens if the play is something that will ALWAYS lose the game, so incur a huge penalty
 			pls[(sg.Winner+1)%2].updateLearning(sg.GameEnded, sa, stupidReward)
 		} else {
-			pls[(sg.Winner+1)%2].updateLearning(sg.GameEnded, sa, 0.0)
+			pls[(sg.Winner+1)%2].updateLearning(sg.GameEnded, sa, noReward)
 		}
 	}
 	fmt.Println("\r100.0% complete")
@@ -123,7 +124,7 @@ func (sl *sarsaLearner) learningAction(state players.SimpleState, game rules.Gam
 		return action, fmt.Errorf("Negative state was calculated: %d", sa)
 	}
 
-	sl.updateLearning(game.GameEnded, sa, 0.0)
+	sl.updateLearning(game.GameEnded, sa, noReward)
 
 	return action, nil
 }
