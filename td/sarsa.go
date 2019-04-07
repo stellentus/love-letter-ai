@@ -23,7 +23,10 @@ type sarsaLearner struct {
 	lastQ int
 }
 
-const unsetState = state.SpaceMagnitude
+const (
+	unsetState = state.SpaceMagnitude
+	winReward  = 100
+)
 
 func NewSarsa(epsilon, alpha, gamma float32) *Sarsa {
 	sar := &Sarsa{
@@ -127,7 +130,7 @@ func (sl *sarsaLearner) updateLearning(gameEnded bool, sa int, won bool) {
 		if !gameEnded {
 			thisValue = sl.sarsa.Gamma * sl.sarsa.qf[sa]
 		} else if won {
-			reward = 1.0
+			reward = winReward
 		}
 		sl.sarsa.qf[sl.lastQ] += sl.sarsa.Alpha * (reward + thisValue - sl.sarsa.qf[sl.lastQ])
 	}
