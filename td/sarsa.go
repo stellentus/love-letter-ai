@@ -28,6 +28,7 @@ const (
 	winReward    = 100
 	stupidReward = -100
 	noReward     = 0
+	lossReward   = -0.1 // The penalty for losing is minor since it might not have been the player's fault
 )
 
 func NewSarsa(epsilon, alpha, gamma float32) *Sarsa {
@@ -97,7 +98,7 @@ func (sarsa *Sarsa) Train(episodes int) {
 			// This only happens if the play is something that will ALWAYS lose the game, so incur a huge penalty
 			pls[(sg.Winner+1)%2].updateLearning(sg.GameEnded, sa, stupidReward)
 		} else {
-			pls[(sg.Winner+1)%2].updateLearning(sg.GameEnded, sa, noReward)
+			pls[(sg.Winner+1)%2].updateLearning(sg.GameEnded, sa, lossReward)
 		}
 	}
 	fmt.Println("\r100.0% complete")
