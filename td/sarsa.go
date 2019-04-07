@@ -50,6 +50,11 @@ func (sarsa Sarsa) Value(actState int) float32 {
 }
 
 func (sarsa *Sarsa) Train(episodes int) {
+	pls := []*sarsaLearner{
+		&sarsaLearner{sarsa: sarsa},
+		&sarsaLearner{sarsa: sarsa},
+	}
+
 	for i := 0; i < episodes; i++ {
 		if (i % 100000) == 0 {
 			fmt.Printf("\r%2.2f%% complete", float32(i)/float32(episodes)*100)
@@ -60,16 +65,8 @@ func (sarsa *Sarsa) Train(episodes int) {
 			panic(err.Error())
 		}
 
-		pls := []*sarsaLearner{
-			&sarsaLearner{
-				sarsa: sarsa,
-				lastQ: unsetState,
-			},
-			&sarsaLearner{
-				sarsa: sarsa,
-				lastQ: unsetState,
-			},
-		}
+		pls[0].lastQ = unsetState
+		pls[1].lastQ = unsetState
 
 		s := players.NewSimpleState(sg)
 		if s.OpponentCard == 0 {
