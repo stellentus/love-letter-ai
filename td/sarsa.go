@@ -87,8 +87,8 @@ func (sarsa *Sarsa) Train(episodes int) {
 		if sa < 0 {
 			panic(fmt.Sprintf("Negative state was calculated: %d", sa))
 		}
-		pls[0].updateLearning(sg.GameEnded, sa)
-		pls[1].updateLearning(sg.GameEnded, sa)
+		pls[0].updateLearning(sg.GameEnded, sa, 0 == sg.Winner)
+		pls[1].updateLearning(sg.GameEnded, sa, 1 == sg.Winner)
 	}
 	fmt.Println("\r100.0% complete")
 }
@@ -114,20 +114,22 @@ func (sl *sarsaLearner) learningAction(state players.SimpleState, game rules.Gam
 		return action, fmt.Errorf("Negative state was calculated: %d", sa)
 	}
 
-	sl.updateLearning(game.GameEnded, sa)
+	sl.updateLearning(game.GameEnded, sa, false)
 
 	return action, nil
 }
 
-func (sl *sarsaLearner) updateLearning(gameEnded bool, sa int) {
+func (sl *sarsaLearner) updateLearning(gameEnded bool, sa int, won bool) {
 	// Now save the update
 	if sl.lastQ != unsetState {
 		reward := float32(0)
-		if gameEnded {
+		thisValue := float32(0) // If game ended, the value of the new state is 0 because it's a terminal state
+		if !gameEnded {
+			thisValue = sl.sarsa.Gamma * sl.sarsa.qf[sa]
+		} else if won {
 			reward = 1.0
 		}
-
-		sl.sarsa.qf[sl.lastQ] += sl.sarsa.Alpha * (reward + sl.sarsa.Gamma*sl.sarsa.qf[sa] - sl.sarsa.qf[sl.lastQ])
+		sl.sarsa.qf[sl.lastQ] += sl.sarsa.Alpha * (reward + thisValue - sl.sarsa.qf[sl.lastQ])
 	}
 	sl.lastQ = sa
 }
