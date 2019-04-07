@@ -45,7 +45,7 @@ func (sarsa *Sarsa) NewPlayer() players.Player {
 	}
 }
 
-func (sarsa *Sarsa) Value(actState int) float32 {
+func (sarsa Sarsa) Value(actState int) float32 {
 	return sarsa.qf[actState]
 }
 
