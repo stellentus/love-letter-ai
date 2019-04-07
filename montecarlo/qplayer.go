@@ -60,7 +60,15 @@ func (qp *QPlayer) PlayCard(state players.SimpleState) rules.Action {
 }
 
 func (qp QPlayer) Value(st int) float32 {
-	return float32(qp.qf[st].sum) / float32(qp.qf[st].count)
+	cnt := float32(qp.qf[st].count)
+	if cnt == 0.0 {
+		return 0.0
+	}
+	sum := float32(qp.qf[st].sum)
+	if sum == 0.0 {
+		return 0.0
+	}
+	return sum / cnt
 }
 
 // policy returns the greedy action for the given state. (Note the argument should be a state, not an action-state.)
