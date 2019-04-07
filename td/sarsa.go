@@ -90,8 +90,8 @@ func (sarsa *Sarsa) Train(episodes int) {
 		if sa < 0 {
 			panic(fmt.Sprintf("Negative state was calculated: %d", sa))
 		}
-		pls[0].updateLearning(sg.GameEnded, sa, 0 == sg.Winner)
-		pls[1].updateLearning(sg.GameEnded, sa, 1 == sg.Winner)
+		pls[sg.Winner].updateLearning(sg.GameEnded, sa, true)
+		pls[(sg.Winner+1)%2].updateLearning(sg.GameEnded, sa, false)
 	}
 	fmt.Println("\r100.0% complete")
 }
