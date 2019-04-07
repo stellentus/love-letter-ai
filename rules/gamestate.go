@@ -49,6 +49,9 @@ type Gamestate struct {
 
 	// FinalState stores some state at the time the game ended. It's only set once GameEnded is true.
 	FinalState
+
+	// LossWasStupid is set to true if the play was something that would never, ever, be a good idea.
+	LossWasStupid bool
 }
 
 type FinalState struct {
@@ -203,6 +206,7 @@ func (state *Gamestate) PlayCard(action Action) {
 		if state.ActivePlayerCard == King || state.ActivePlayerCard == Prince {
 			// Automatically eliminated for cheating. This is not the same as the rules, which simply forbid this.
 			state.eliminatePlayer(state.ActivePlayer)
+			state.LossWasStupid = true
 			return
 		}
 	}
@@ -216,6 +220,7 @@ func (state *Gamestate) PlayCard(action Action) {
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a Guard
 			state.eliminatePlayer(state.ActivePlayer)
+			state.LossWasStupid = true
 			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
@@ -231,6 +236,7 @@ func (state *Gamestate) PlayCard(action Action) {
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a Priest
 			state.eliminatePlayer(state.ActivePlayer)
+			state.LossWasStupid = true
 			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
@@ -242,6 +248,7 @@ func (state *Gamestate) PlayCard(action Action) {
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a Baron
 			state.eliminatePlayer(state.ActivePlayer)
+			state.LossWasStupid = true
 			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
@@ -263,6 +270,7 @@ func (state *Gamestate) PlayCard(action Action) {
 		if !(action.TargetPlayerOffset >= 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a Prince
 			state.eliminatePlayer(state.ActivePlayer)
+			state.LossWasStupid = true
 			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
@@ -280,10 +288,14 @@ func (state *Gamestate) PlayCard(action Action) {
 			state.CardInHand[targetPlayer] = state.Deck.Draw()
 		}
 		state.clearKnownCard(targetPlayer, targetCard)
+		if targetCard == Princess && targetPlayer == state.ActivePlayer {
+			state.LossWasStupid = true
+		}
 	case King:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a King
 			state.eliminatePlayer(state.ActivePlayer)
+			state.LossWasStupid = true
 			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
@@ -311,9 +323,11 @@ func (state *Gamestate) PlayCard(action Action) {
 	case Princess:
 		// Idiot!
 		state.eliminatePlayer(state.ActivePlayer)
+		state.LossWasStupid = true
 	default:
 		// An invalid card was played
 		state.eliminatePlayer(state.ActivePlayer)
+		state.LossWasStupid = true
 	}
 
 	if state.Deck.Size() > 1 {
