@@ -6,6 +6,7 @@ import (
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
 	"math/rand"
+	"os"
 )
 
 type Sarsa struct {
@@ -69,7 +70,7 @@ func (sarsa *Sarsa) Train(episodes int) {
 
 	for i := 0; i < episodes; i++ {
 		if (i % 100000) == 0 {
-			fmt.Printf("\r%2.2f%% complete", float32(i)/float32(episodes)*100)
+			fmt.Fprintf(os.Stderr, "\r%2.2f%% complete", float32(i)/float32(episodes)*100)
 		}
 		if (i % 100) == 0 {
 			// Every so often, start from a new starting state
@@ -106,7 +107,7 @@ func (sarsa *Sarsa) Train(episodes int) {
 			pls[sg.Winner].updateLearning(sg.GameEnded, sa, winReward)
 		}
 	}
-	fmt.Println("\r100.0% complete")
+	fmt.Fprintln(os.Stderr, "\r100.0% complete")
 }
 
 // PlayCard provides a suggested action for the provided state.

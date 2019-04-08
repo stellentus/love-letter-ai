@@ -5,6 +5,7 @@ import (
 	"love-letter-ai/gamemaster"
 	"love-letter-ai/players"
 	"love-letter-ai/state"
+	"os"
 )
 
 type Value struct {
@@ -20,11 +21,11 @@ type Action [state.SpaceMagnitude]uint8
 func (vf *ValueFunction) Train(pl players.Player, episodes int) {
 	for i := 0; i < episodes; i++ {
 		if (i % 100000) == 0 {
-			fmt.Printf("% 2.2f%% complete\r", float32(i)/float32(episodes)*100)
+			fmt.Fprintf(os.Stderr, "% 2.2f%% complete\r", float32(i)/float32(episodes)*100)
 		}
 		vf.Update(pl)
 	}
-	fmt.Println("100.0% complete")
+	fmt.Fprintln(os.Stderr, "100.0% complete")
 }
 
 func (vf *ValueFunction) Update(pl players.Player) {
