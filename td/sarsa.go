@@ -76,9 +76,6 @@ func (sarsa *Sarsa) Train(episodes int) {
 		pls[1].lastQ = unsetState
 
 		s := players.NewSimpleState(sg)
-		if s.OpponentCard == 0 {
-			s.OpponentCard++
-		}
 
 		for !sg.GameEnded {
 			action, err := pls[sg.ActivePlayer].learningAction(s, sg)

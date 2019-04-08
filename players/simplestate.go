@@ -39,7 +39,10 @@ func NewSimpleState(state rules.Gamestate) SimpleState {
 	if len(state.Discards[opponent]) > 0 {
 		// Get opponent's last played card. (If a Prince was played on the opponent, this will still show the last played card.)
 		simple.OpponentCard = state.LastPlay[opponent]
-	} // else default to None
+	} else {
+		// else default to Guard
+		simple.OpponentCard = rules.Guard
+	}
 	simple.ScoreDiff = state.Discards[state.ActivePlayer].Score() - state.Discards[opponent].Score()
 
 	return simple
