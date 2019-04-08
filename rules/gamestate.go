@@ -201,6 +201,10 @@ func (state *Gamestate) PlayCard(action Action) {
 		state.CardInHand[state.ActivePlayer] = card
 	}
 
+	state.clearKnownCard(state.ActivePlayer, state.ActivePlayerCard)
+	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.ActivePlayerCard)
+	state.LastPlay[state.ActivePlayer] = state.ActivePlayerCard
+
 	// If the retained card is the Countess, make sure that's allowed
 	if state.CardInHand[state.ActivePlayer] == Countess {
 		if state.ActivePlayerCard == King || state.ActivePlayerCard == Prince {
@@ -210,10 +214,6 @@ func (state *Gamestate) PlayCard(action Action) {
 			return
 		}
 	}
-
-	state.clearKnownCard(state.ActivePlayer, state.ActivePlayerCard)
-	state.Discards[state.ActivePlayer] = append(state.Discards[state.ActivePlayer], state.ActivePlayerCard)
-	state.LastPlay[state.ActivePlayer] = state.ActivePlayerCard
 
 	switch state.ActivePlayerCard {
 	case Guard:
