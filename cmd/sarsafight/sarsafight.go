@@ -9,16 +9,18 @@ import (
 )
 
 const (
-	rounds     = 10000000
-	loops      = 1000
-	gamma      = 1
-	epsilon    = 0.3
-	alphaDecay = 0.995
-	alphaStart = 0.3
+	rounds       = 10000000
+	loops        = 1000
+	gamma        = 1
+	epsilonStart = 0.3
+	alphaDecay   = 0.995
+	epsilonDecay = 0.7
+	alphaStart   = 0.3
 )
 
 func main() {
 	alpha := float32(alphaStart)
+	epsilon := float32(epsilonStart)
 	sar := td.NewSarsa(epsilon, alpha, gamma)
 	pl := sar.NewPlayer()
 
@@ -30,6 +32,11 @@ func main() {
 
 		alpha *= alphaDecay
 		sar.Alpha = alpha
+
+		if (j % 100) == 0 {
+			epsilon *= epsilonDecay
+			sar.Epsilon = epsilon
+		}
 	}
 
 	fmt.Printf("\n\nPlaying greedily...\n")
