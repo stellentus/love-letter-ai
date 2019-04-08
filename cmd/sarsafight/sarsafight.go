@@ -56,11 +56,11 @@ func printTraces(n int, pl players.Player, sar *td.Sarsa) {
 }
 
 func fightRandom(n int, pl players.Player) {
-	fmt.Printf("Sarsa playing 1st has a win rate of %2.1f%%\n", fightPlayers(n, []players.Player{
+	fmt.Printf("Sarsa win rates: %2.1f%%,", fightPlayers(n, []players.Player{
 		pl,
 		&players.RandomPlayer{},
 	}))
-	fmt.Printf("Sarsa playing 2nd has a win rate of %2.1f%%\n", 100.0-fightPlayers(n, []players.Player{
+	fmt.Printf(" %2.1f%%\n", 100.0-fightPlayers(n, []players.Player{
 		&players.RandomPlayer{},
 		pl,
 	}))
