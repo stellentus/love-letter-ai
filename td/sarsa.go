@@ -62,15 +62,23 @@ func (sarsa *Sarsa) Train(episodes int) {
 		&sarsaLearner{sarsa: sarsa},
 	}
 
+	templateSG, err := rules.NewGame(2)
+	if err != nil {
+		panic(err.Error())
+	}
+
 	for i := 0; i < episodes; i++ {
 		if (i % 100000) == 0 {
 			fmt.Printf("\r%2.2f%% complete", float32(i)/float32(episodes)*100)
 		}
-
-		sg, err := rules.NewGame(2)
-		if err != nil {
-			panic(err.Error())
+		if (i % 100) == 0 {
+			// Every so often, start from a new starting state
+			templateSG, err = rules.NewGame(2)
+			if err != nil {
+				panic(err.Error())
+			}
 		}
+		sg := templateSG.Copy()
 
 		pls[0].lastQ = unsetState
 		pls[1].lastQ = unsetState

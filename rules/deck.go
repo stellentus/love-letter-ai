@@ -58,6 +58,14 @@ func (deck Deck) Size() int {
 	return sum
 }
 
+func (deck Deck) Copy() Deck {
+	deck2 := Deck{}
+	for i, val := range deck {
+		deck2[i] = val
+	}
+	return deck2
+}
+
 func (deck *Deck) Draw() Card {
 	size := deck.Size()
 	if size == 0 {
@@ -95,4 +103,12 @@ func (stack Stack) Score() int {
 		sum += int(card)
 	}
 	return sum
+}
+
+func (stack Stack) Copy() Stack {
+	stack2 := make([]Card, 0, len(stack))
+	for _, val := range stack {
+		stack2 = append(stack2, val)
+	}
+	return stack2
 }

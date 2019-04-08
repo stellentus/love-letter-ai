@@ -93,6 +93,39 @@ func NewGame(playerCount int) (Gamestate, error) {
 	return state, nil
 }
 
+func (game Gamestate) Copy() Gamestate {
+	gs := Gamestate{
+		NumPlayers:       game.NumPlayers,
+		Deck:             game.Deck.Copy(),
+		Faceup:           game.Faceup.Copy(),
+		LastPlay:         game.LastPlay.Copy(),
+		ActivePlayer:     game.ActivePlayer,
+		CardInHand:       game.CardInHand.Copy(),
+		ActivePlayerCard: game.ActivePlayerCard,
+		GameEnded:        game.GameEnded,
+		Winner:           game.Winner,
+		FinalState:       game.FinalState,
+		LossWasStupid:    game.LossWasStupid,
+	}
+
+	gs.Discards = make([]Stack, 0, len(game.Discards))
+	for _, val := range game.Discards {
+		gs.Discards = append(gs.Discards, val.Copy())
+	}
+
+	gs.KnownCards = make([]Stack, 0, len(game.KnownCards))
+	for _, val := range game.KnownCards {
+		gs.KnownCards = append(gs.KnownCards, val.Copy())
+	}
+
+	gs.EliminatedPlayers = make([]bool, 0, len(game.EliminatedPlayers))
+	for _, val := range game.EliminatedPlayers {
+		gs.EliminatedPlayers = append(gs.EliminatedPlayers, val)
+	}
+
+	return gs
+}
+
 // NewSimpleGame deals out a new game for 2 players with a simplified deck.
 // This always assumes that player 0 is the starting player.
 // It draws 4 cards from the previous deck:
