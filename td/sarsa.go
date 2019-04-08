@@ -83,20 +83,17 @@ func (sarsa *Sarsa) Train(episodes int) {
 		pls[0].lastQ = unsetState
 		pls[1].lastQ = unsetState
 
-		s := players.NewSimpleState(sg)
-
 		for !sg.GameEnded {
-			action, err := pls[sg.ActivePlayer].learningAction(s, sg)
+			action, err := pls[sg.ActivePlayer].learningAction(sg)
 			if err != nil {
 				panic(err.Error())
 			}
 
 			sg.PlayCard(action)
-			s = players.NewSimpleState(sg)
 		}
 
 		// Now allow both players to update based on the end of the game.
-		sa, _ := s.AsIntWithAction(rules.Action{})
+		sa, _ := players.NewSimpleState(sg).AsIntWithAction(rules.Action{})
 		if sa < 0 {
 			panic(fmt.Sprintf("Negative state was calculated: %d", sa))
 		}
@@ -124,7 +121,8 @@ func (sl *sarsaLearner) PlayCard(state players.SimpleState) rules.Action {
 
 // learningAction provides a suggested action for the provided state.
 // However, it also assumes it's being called for each play in a game so it can update the policy.
-func (sl *sarsaLearner) learningAction(state players.SimpleState, game rules.Gamestate) (rules.Action, error) {
+func (sl *sarsaLearner) learningAction(game rules.Gamestate) (rules.Action, error) {
+	state := players.NewSimpleState(game)
 	action := sl.PlayCard(state)
 
 	// Calculate the new state
