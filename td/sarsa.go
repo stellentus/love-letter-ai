@@ -112,7 +112,7 @@ func (sarsa *Sarsa) Train(episodes int) {
 // PlayCard provides a suggested action for the provided state.
 // If it hasn't learned anything for this state, it plays randomly.
 func (sl *sarsaLearner) PlayCard(state players.SimpleState) rules.Action {
-	act := sl.sarsa.greedyAction(state.AsInt())
+	act, _ := sl.sarsa.greedyAction(state.AsInt())
 	if act == nil {
 		return (&players.RandomPlayer{}).PlayCard(state)
 	}
@@ -122,17 +122,8 @@ func (sl *sarsaLearner) PlayCard(state players.SimpleState) rules.Action {
 // learningAction provides a suggested action for the provided state.
 // However, it also assumes it's being called for each play in a game so it can update the policy.
 func (sl *sarsaLearner) learningAction(game rules.Gamestate) (rules.Action, error) {
-	state := players.NewSimpleState(game)
-	action := sl.PlayCard(state)
-
-	// Calculate the new state
-	sa, _ := state.AsIntWithAction(action)
-	if sa < 0 {
-		return action, fmt.Errorf("Negative state was calculated: %d", sa)
-	}
-
+	action, sa := sl.sarsa.epsilonGreedyAction(players.NewSimpleState(game))
 	sl.updateLearning(game.GameEnded, sa, noReward)
-
 	return action, nil
 }
 
@@ -152,32 +143,36 @@ func (sl *sarsaLearner) updateLearning(gameEnded bool, sa int, reward float32) {
 // If it hasn't learned anything for this state, it plays randomly.
 // It will also choose a random action with probability Epsilon. This isn't exactly
 // Epsilon-greedy because it doesn't subtract the probability of the greedy action.
-func (sarsa Sarsa) epsilonGreedyAction(state players.SimpleState) rules.Action {
-	act := sarsa.greedyAction(state.AsInt())
+func (sarsa Sarsa) epsilonGreedyAction(st players.SimpleState) (rules.Action, int) {
+	sNoAct := st.AsInt()
+	act, sa := sarsa.greedyAction(sNoAct)
 	if act == nil || rand.Float32() < sarsa.Epsilon {
-		return (&players.RandomPlayer{}).PlayCard(state)
+		action := (&players.RandomPlayer{}).PlayCard(st)
+		return action, state.IndexWithAction(sNoAct, action)
 	}
-	return *act
+	return *act, sa
 }
 
 // greedyAction returns the greedy action for the given state. (Note the argument should be a state, not an action-state.)
 // Ties are broken by choosing the first option (i.e. arbitrarily in a deterministic way).
-func (sarsa Sarsa) greedyAction(st int) *rules.Action {
+func (sarsa Sarsa) greedyAction(st int) (*rules.Action, int) {
 	bestActs := []int{}
 	bestActValue := float32(0)
+	bestActState := 0
 	for act, actState := range state.AllActionStates(st) {
 		thisVal := sarsa.qf[actState]
 		if thisVal > bestActValue {
 			bestActValue = thisVal
 			bestActs = []int{act}
+			bestActState = actState
 		} else if thisVal == bestActValue {
 			bestActs = append(bestActs, act)
 		}
 	}
 	if len(bestActs) > 0 {
 		bestAct := rules.ActionFromInt(bestActs[0])
-		return &bestAct
+		return &bestAct, bestActState
 	} else {
-		return nil
+		return nil, 0
 	}
 }
