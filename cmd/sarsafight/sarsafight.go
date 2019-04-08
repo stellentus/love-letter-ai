@@ -9,14 +9,16 @@ import (
 )
 
 const (
-	rounds  = 100000000
-	loops   = 100
-	gamma   = 1
-	epsilon = 0.3
+	rounds     = 10000000
+	loops      = 1000
+	gamma      = 1
+	epsilon    = 0.3
+	alphaDecay = 0.995
+	alphaStart = 0.3
 )
 
 func main() {
-	alpha := float32(0.3)
+	alpha := float32(alphaStart)
 	sar := td.NewSarsa(epsilon, alpha, gamma)
 	pl := sar.NewPlayer()
 
@@ -26,7 +28,7 @@ func main() {
 
 		fightRandom(10000, pl)
 
-		alpha *= 0.95
+		alpha *= alphaDecay
 		sar.Alpha = alpha
 	}
 
