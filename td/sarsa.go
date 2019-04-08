@@ -69,7 +69,7 @@ func (sarsa *Sarsa) Train(episodes int) {
 	}
 
 	for i := 0; i < episodes; i++ {
-		if (i % 100000) == 0 {
+		if (i % (episodes / 10000)) == 0 {
 			fmt.Fprintf(os.Stderr, "\r%2.2f%% complete", float32(i)/float32(episodes)*100)
 		}
 		if (i % 100) == 0 {
