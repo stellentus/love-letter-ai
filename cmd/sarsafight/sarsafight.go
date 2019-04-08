@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	rounds  = 1000000000
+	rounds  = 100000000
+	loops   = 100
 	gamma   = 1
 	epsilon = 0.3
 )
@@ -19,20 +20,19 @@ func main() {
 	sar := td.NewSarsa(epsilon, alpha, gamma)
 	pl := sar.NewPlayer()
 
-	for j := 0; j < 6; j++ {
+	for j := 0; j < loops; j++ {
 		fmt.Printf("Running vs self %d...\n", j+1)
 		sar.Train(rounds)
 
-		printTraces(20, pl, sar)
-		fightRandom(1000, pl)
+		fightRandom(10000, pl)
 
-		alpha *= 0.7
+		alpha *= 0.95
 		sar.Alpha = alpha
 	}
 
 	fmt.Printf("\n\nPlaying greedily...\n")
 	printTraces(50, pl, sar)
-	fightRandom(1000, pl)
+	fightRandom(10000, pl)
 }
 
 func printTraces(n int, pl players.Player, sar *td.Sarsa) {
@@ -56,11 +56,11 @@ func printTraces(n int, pl players.Player, sar *td.Sarsa) {
 }
 
 func fightRandom(n int, pl players.Player) {
-	fmt.Printf("MC playing 1st has a win rate of %2.1f%%\n", fightPlayers(n, []players.Player{
+	fmt.Printf("Sarsa playing 1st has a win rate of %2.1f%%\n", fightPlayers(n, []players.Player{
 		pl,
 		&players.RandomPlayer{},
 	}))
-	fmt.Printf("MC playing 2nd has a win rate of %2.1f%%\n", 100.0-fightPlayers(n, []players.Player{
+	fmt.Printf("Sarsa playing 2nd has a win rate of %2.1f%%\n", 100.0-fightPlayers(n, []players.Player{
 		&players.RandomPlayer{},
 		pl,
 	}))
