@@ -24,7 +24,7 @@ type sarsaLearner struct {
 }
 
 const (
-	unsetState       = state.SpaceMagnitude
+	unsetState       = state.ActionSpaceMagnitude
 	winReward        = 100
 	stupidReward     = -100
 	forfeitWinReward = 1 // Only a minor benefit for winning because the other player was an idiot
@@ -87,6 +87,7 @@ func (sarsa *Sarsa) Train(episodes int) {
 			}
 
 			sg.PlayCard(action)
+			s = players.NewSimpleState(sg)
 		}
 
 		// Now allow both players to update based on the end of the game.
