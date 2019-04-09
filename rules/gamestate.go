@@ -51,6 +51,7 @@ type Gamestate struct {
 	FinalState
 
 	// LossWasStupid is set to true if the play was something that would never, ever, be a good idea.
+	// This is only meaningful in 2-player.
 	LossWasStupid bool
 }
 
@@ -322,7 +323,10 @@ func (state *Gamestate) PlayCard(action Action) {
 		}
 		state.clearKnownCard(targetPlayer, targetCard)
 		if targetCard == Princess && targetPlayer == state.ActivePlayer {
-			state.LossWasStupid = true
+			// This was stupid UNLESS the other player has a Handmaid, in which case this is okay.
+			if state.NumPlayers == 2 && state.LastPlay[(state.ActivePlayer+1)%2] != Handmaid {
+				state.LossWasStupid = true
+			}
 		}
 	case King:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
