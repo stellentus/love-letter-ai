@@ -16,13 +16,15 @@
       <!-- TODO: Add a link to the rules -->
     </div>
 
+    <h2>Current Score {{.Score.You}}-{{.Score.Computer}}</h2>
+
     <h2>Revealed cards</h2>
     {{.RevealedCards}}
 
-    <h2>You ({{.Score.You}})</h2>
+    <h2>You</h2>
     {{.PlayedCards.You}}
 
-    <h2>Computer ({{.Score.Computer}})</h2>
+    <h2>Computer</h2>
     {{.PlayedCards.Computer}}
 
     <h2>Last Turn</h2>
