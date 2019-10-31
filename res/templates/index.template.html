@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Love Letter AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+  </head>
+
+  <body class="bg-light">
+    <div class="alert alert-success">
+      <h1>Love Letter AI</h1>
+      <div>Developed by <a href="https://bellstone.ca">Bellstone Engineering</a></div>
+      <!-- TODO: Add a link to the rules -->
+    </div>
+
+    <h2>Revealed cards</h2>
+    {{.RevealedCards}}
+
+    <h2>You ({{.Score.You}})</h2>
+    {{.PlayedCards.You}}
+
+    <h2>Computer ({{.Score.Computer}})</h2>
+    {{.PlayedCards.Computer}}
+
+    <h2>Last Turn</h2>
+    Computer played {{.LastPlay}}.
+    <!-- TODO LastPlay could be "Guard, guessing you had a princess." -->
+
+    <h2>Your Turn</h2>
+    <form action="index.template.html" method="POST" role="form" class="form-horizontal">
+      <label>Choose a card to discard</label>
+      <div class="btn-group" data-toggle="buttons">
+        <label class="btn btn-primary">
+          <input type="radio" id="cards" name="cards" value="card1"> {{.Card1}}
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" id="cards" name="cards" value="card2"> {{.Card2}}
+        </label>
+      </div>
+      <label>Target player</label>
+      <div class="btn-group" data-toggle="buttons">
+        <label class="btn btn-primary">
+          <input type="radio" id="targets" name="targets" value="self"> Self
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" id="targets" name="targets" value="computer" checked> Computer
+        </label>
+      </div>
+      <label>Guess (for guard)</label>
+      <div class="btn-group" data-toggle="buttons">
+        <label class="btn btn-primary">
+          <input type="radio" id="guess" name="guess" value="Priest"> Priest
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" id="guess" name="guess" value="Baron"> Baron
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" id="guess" name="guess" value="Handmaid"> Handmaid
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" id="guess" name="guess" value="Prince"> Prince
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" id="guess" name="guess" value="King"> King
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" id="guess" name="guess" value="Countess"> Countess
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" id="guess" name="guess" value="Princess"> Princess
+        </label>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn btn-default">Play it!</button>
+        </div>
+      </div>
+    </form>
+
+
+  </body>
+</html>
