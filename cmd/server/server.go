@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 )
@@ -41,7 +42,23 @@ func main() {
 			Card1:    "Priest",
 			Card2:    "Guard",
 		}
-		tmpl.Execute(w, data)
+
+		fmt.Println("Received", r.Method)
+
+		switch r.Method {
+		case "GET":
+			tmpl.Execute(w, data)
+		case "POST":
+			if err := r.ParseForm(); err != nil {
+				fmt.Printf("ParseForm() err: %v", err)
+				return
+			}
+			fmt.Printf("cards = %s\n", r.FormValue("cards"))
+			fmt.Printf("targets = %s\n", r.FormValue("targets"))
+			fmt.Printf("guess = %s\n", r.FormValue("guess"))
+
+			tmpl.Execute(w, data)
+		}
 	})
 	http.ListenAndServe(":8080", nil)
 }
