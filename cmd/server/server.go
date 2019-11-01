@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"love-letter-ai/gamemaster"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
 )
@@ -42,31 +41,40 @@ func (wp WebPlayer) PlayCard(players.SimpleState) rules.Action {
 	return <-wp.action
 }
 
+const NUMBER_OF_PLAYERS = 2
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	wp := WebPlayer{action: make(chan rules.Action, 1)}
 
-	pls := []players.Player{
-		&wp,
-		&players.RandomPlayer{},
-	}
-
-	gm, err := gamemaster.New(pls)
+	state, err := rules.NewGame(NUMBER_OF_PLAYERS)
 	if err != nil {
 		panic(err)
 	}
 
-	go func(gmas *gamemaster.Gamemaster) {
+	go func() {
 		// The series can play in the background because it's mostly blocking for user input.
 		// This doesn't shut down properly when the server shuts down.
-		// If the user tries more than 1000 games before the server restarts, then nothing happens.
 		// If multiple users connect, bad things happen.
-		_, err := gmas.PlaySeries(1000)
-		if err != nil {
-			panic(err)
+		for {
+			var ply players.Player
+			if state.ActivePlayer == 0 {
+				ply = &wp
+			} else {
+				ply = &players.RandomPlayer{}
+			}
+			action := ply.PlayCard(players.NewSimpleState(state))
+			state.PlayCard(action)
+
+			if state.GameEnded {
+				state, err = rules.NewGame(NUMBER_OF_PLAYERS)
+				if err != nil {
+					panic(err)
+				}
+			}
 		}
-	}(&gm)
+	}()
 
 	tmpl := template.Must(template.ParseFiles("../../res/templates/index.template.html"))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -98,14 +106,12 @@ func main() {
 
 			// Now reload the content...
 		}
-		tmpl.Execute(w, stateForTemplate(gm))
+		tmpl.Execute(w, stateForTemplate(state))
 	})
 	http.ListenAndServe(":8080", nil)
 }
 
-func stateForTemplate(gm gamemaster.Gamemaster) LoveLetterState {
-	state := gm.Gamestate
-
+func stateForTemplate(state rules.Gamestate) LoveLetterState {
 	fmt.Println(state)
 
 	data := LoveLetterState{
@@ -118,7 +124,7 @@ func stateForTemplate(gm gamemaster.Gamemaster) LoveLetterState {
 			You:      state.Discards[0].String(),
 			Computer: state.Discards[1].String(),
 		},
-		LastPlay: state.LastPlay[1].String(), // TODO this should include the Guard's guess or the Prince's target
+		LastPlay: state.LastPlay[1].String(),
 		Card1:    state.CardInHand[0].String(),
 		Card2:    state.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
 		EventLog: template.HTML(strings.Join(state.EventLog.Events, "<br>")),
