@@ -3,7 +3,13 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"math/rand"
 	"net/http"
+	"time"
+
+	"love-letter-ai/gamemaster"
+	"love-letter-ai/players"
+	"love-letter-ai/rules"
 )
 
 type Score struct {
@@ -25,40 +31,94 @@ type LoveLetterState struct {
 	Card2    string
 }
 
+type WebPlayer struct {
+	action chan rules.Action
+}
+
+func (wp WebPlayer) PlayCard(players.SimpleState) rules.Action {
+	// Wait on the channel until a rules.Action is received, then return it.
+	return <-wp.action
+}
+
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
+	wp := WebPlayer{action: make(chan rules.Action, 1)}
+
+	pls := []players.Player{
+		&wp,
+		&players.RandomPlayer{},
+	}
+
+	gm, err := gamemaster.New(pls)
+	if err != nil {
+		panic(err)
+	}
+
+	go func(gmas *gamemaster.Gamemaster) {
+		// The series can play in the background because it's mostly blocking for user input.
+		// This doesn't shut down properly when the server shuts down.
+		// If the user tries more than 1000 games before the server restarts, then nothing happens.
+		// If multiple users connect, bad things happen.
+		_, err := gmas.PlaySeries(1000)
+		if err != nil {
+			panic(err)
+		}
+	}(&gm)
+
 	tmpl := template.Must(template.ParseFiles("../../res/templates/index.template.html"))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		data := LoveLetterState{
-			RevealedCards: "Guard, Baron, Handmaid",
-			Score: Score{
-				You:      8,
-				Computer: 2,
-			},
-			PlayedCards: PlayedCards{
-				You:      "Priest, Prince, Baron, Handmaid",
-				Computer: "Guard, Countess, Guard",
-			},
-			LastPlay: "Guard, guessing you had a Princess",
-			Card1:    "Priest",
-			Card2:    "Guard",
-		}
-
-		fmt.Println("Received", r.Method)
-
 		switch r.Method {
-		case "GET":
-			tmpl.Execute(w, data)
 		case "POST":
+			// TODO parse the action, send it through the wp.chan, then get current game state and output it.
 			if err := r.ParseForm(); err != nil {
 				fmt.Printf("ParseForm() err: %v", err)
 				return
 			}
-			fmt.Printf("cards = %s\n", r.FormValue("cards"))
-			fmt.Printf("targets = %s\n", r.FormValue("targets"))
-			fmt.Printf("guess = %s\n", r.FormValue("guess"))
 
-			tmpl.Execute(w, data)
+			// Parse the action
+			act := rules.Action{}
+			if r.FormValue("cards") == "card2" {
+				act.PlayRecent = true
+			}
+			if r.FormValue("targets") == "computer" {
+				act.TargetPlayerOffset = 1
+			}
+			act.SelectedCard = rules.CardFromString(r.FormValue("guess"))
+			fmt.Println("Parsing action:", act)
+
+			// Play the action
+			wp.action <- act
+			for len(wp.action) == cap(wp.action) {
+				// Wait until the channel has been read; then assume the action has been played
+				time.Sleep(time.Millisecond)
+			}
+
+			// Now reload the content...
 		}
+		tmpl.Execute(w, stateForTemplate(gm))
 	})
 	http.ListenAndServe(":8080", nil)
+}
+
+func stateForTemplate(gm gamemaster.Gamemaster) LoveLetterState {
+	state := gm.Gamestate
+
+	fmt.Println(state)
+
+	data := LoveLetterState{
+		RevealedCards: state.Faceup.String(),
+		Score: Score{
+			You:      8,
+			Computer: 2,
+		},
+		PlayedCards: PlayedCards{
+			You:      state.Discards[0].String(),
+			Computer: state.Discards[1].String(),
+		},
+		LastPlay: state.LastPlay[1].String(), // TODO this should include the Guard's guess or the Prince's target
+		Card1:    state.CardInHand[0].String(),
+		Card2:    state.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
+	}
+	return data
 }
