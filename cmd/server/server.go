@@ -52,6 +52,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	state.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
 
 	go func() {
 		// The series can play in the background because it's mostly blocking for user input.
@@ -68,10 +69,12 @@ func main() {
 			state.PlayCard(action)
 
 			if state.GameEnded {
+				oldEL := state.EventLog
 				state, err = rules.NewGame(NUMBER_OF_PLAYERS)
 				if err != nil {
 					panic(err)
 				}
+				state.EventLog = oldEL // Continue event log from before
 			}
 		}
 	}()
