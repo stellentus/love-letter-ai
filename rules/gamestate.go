@@ -120,6 +120,7 @@ func (game *Gamestate) Reset() error {
 		return err
 	}
 	game.EventLog = oldEL // Continue event log from before
+	game.EventLog.log("New Game")
 	return nil
 }
 
