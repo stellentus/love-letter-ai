@@ -32,21 +32,12 @@ type LoveLetterState struct {
 	EventLog template.HTML
 }
 
-type WebPlayer struct {
-	action chan rules.Action
-}
-
-func (wp WebPlayer) PlayCard(players.SimpleState) rules.Action {
-	// Wait on the channel until a rules.Action is received, then return it.
-	return <-wp.action
-}
-
 const NUMBER_OF_PLAYERS = 2
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	wp := WebPlayer{action: make(chan rules.Action, 1)}
+	comPlay := &players.RandomPlayer{}
 
 	state, err := rules.NewGame(NUMBER_OF_PLAYERS)
 	if err != nil {
@@ -54,36 +45,15 @@ func main() {
 	}
 	state.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
 
-	go func() {
-		// The series can play in the background because it's mostly blocking for user input.
-		// This doesn't shut down properly when the server shuts down.
-		// If multiple users connect, bad things happen.
-		for {
-			var ply players.Player
-			if state.ActivePlayer == 0 {
-				ply = &wp
-			} else {
-				ply = &players.RandomPlayer{}
-			}
-			action := ply.PlayCard(players.NewSimpleState(state))
-			state.PlayCard(action)
-
-			if state.GameEnded {
-				oldEL := state.EventLog
-				state, err = rules.NewGame(NUMBER_OF_PLAYERS)
-				if err != nil {
-					panic(err)
-				}
-				state.EventLog = oldEL // Continue event log from before
-			}
-		}
-	}()
-
 	tmpl := template.Must(template.ParseFiles("../../res/templates/index.template.html"))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "POST":
-			// TODO parse the action, send it through the wp.chan, then get current game state and output it.
+			if state.ActivePlayer != 0 {
+				// This is an error
+				panic("Active player is not the human!")
+			}
+
 			if err := r.ParseForm(); err != nil {
 				fmt.Printf("ParseForm() err: %v", err)
 				return
@@ -99,12 +69,30 @@ func main() {
 			}
 			act.SelectedCard = rules.CardFromString(r.FormValue("guess"))
 			fmt.Println("Parsing action:", act)
+			state.PlayCard(act)
 
-			// Play the action
-			wp.action <- act
-			for len(wp.action) == cap(wp.action) {
-				// Wait until the channel has been read; then assume the action has been played
-				time.Sleep(time.Millisecond)
+			// Did the player's move end the game?
+			if state.GameEnded {
+				oldEL := state.EventLog
+				state, err = rules.NewGame(NUMBER_OF_PLAYERS)
+				if err != nil {
+					panic(err)
+				}
+				state.EventLog = oldEL // Continue event log from before
+				break
+			}
+
+			// The player didn't end the game, so the computer gets a turn...
+			action := comPlay.PlayCard(players.NewSimpleState(state))
+			state.PlayCard(action)
+
+			if state.GameEnded {
+				oldEL := state.EventLog
+				state, err = rules.NewGame(NUMBER_OF_PLAYERS)
+				if err != nil {
+					panic(err)
+				}
+				state.EventLog = oldEL // Continue event log from before
 			}
 
 			// Now reload the content...
