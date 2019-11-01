@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"love-letter-ai/gamemaster"
@@ -29,6 +30,7 @@ type LoveLetterState struct {
 	LastPlay string
 	Card1    string
 	Card2    string
+	EventLog template.HTML
 }
 
 type WebPlayer struct {
@@ -119,6 +121,7 @@ func stateForTemplate(gm gamemaster.Gamemaster) LoveLetterState {
 		LastPlay: state.LastPlay[1].String(), // TODO this should include the Guard's guess or the Prince's target
 		Card1:    state.CardInHand[0].String(),
 		Card2:    state.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
+		EventLog: template.HTML(strings.Join(state.EventLog.Events, "<br>")),
 	}
 	return data
 }
