@@ -331,7 +331,7 @@ func (state *Gamestate) PlayCard(action Action) {
 			state.logPlayer(state.ActivePlayer, "played a Priest, but it was blocked by a Handmaid")
 			break
 		}
-		state.logPlayer(state.ActivePlayer, "played a Priest")
+		state.logPlayer(state.ActivePlayer, "played a Priest and saw a "+state.CardInHand[targetPlayer].String())
 		state.KnownCards[targetPlayer][state.ActivePlayer] = state.CardInHand[targetPlayer]
 	case Baron:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
