@@ -73,12 +73,7 @@ func main() {
 
 			// Did the player's move end the game?
 			if state.GameEnded {
-				oldEL := state.EventLog
-				state, err = rules.NewGame(NUMBER_OF_PLAYERS)
-				if err != nil {
-					panic(err)
-				}
-				state.EventLog = oldEL // Continue event log from before
+				state.Reset()
 				break
 			}
 
@@ -87,12 +82,7 @@ func main() {
 			state.PlayCard(action)
 
 			if state.GameEnded {
-				oldEL := state.EventLog
-				state, err = rules.NewGame(NUMBER_OF_PLAYERS)
-				if err != nil {
-					panic(err)
-				}
-				state.EventLog = oldEL // Continue event log from before
+				state.Reset()
 			}
 
 			// Now reload the content...
