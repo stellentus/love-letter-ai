@@ -504,5 +504,5 @@ func (el *EventLog) logPlayer(player int, event string) {
 }
 
 func (el *EventLog) log(event string) {
-	el.Events = append(el.Events, event)
+	el.Events = append([]string{event}, el.Events...)
 }
