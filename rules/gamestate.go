@@ -112,6 +112,17 @@ func NewGame(playerCount int) (Gamestate, error) {
 	return state, nil
 }
 
+func (game *Gamestate) Reset() error {
+	oldEL := game.EventLog
+	var err error
+	*game, err = NewGame(game.NumPlayers)
+	if err != nil {
+		return err
+	}
+	game.EventLog = oldEL // Continue event log from before
+	return nil
+}
+
 func (game Gamestate) Copy() Gamestate {
 	gs := Gamestate{
 		NumPlayers:       game.NumPlayers,
