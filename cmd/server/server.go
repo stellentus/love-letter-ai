@@ -38,6 +38,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	comPlay := &players.RandomPlayer{}
+	score := []int{0, 0} // Number of wins for each player
 
 	state, err := rules.NewGame(NUMBER_OF_PLAYERS)
 	if err != nil {
@@ -73,6 +74,7 @@ func main() {
 
 			// Did the player's move end the game?
 			if state.GameEnded {
+				score[state.Winner]++
 				state.Reset()
 				break
 			}
@@ -82,24 +84,25 @@ func main() {
 			state.PlayCard(action)
 
 			if state.GameEnded {
+				score[state.Winner]++
 				state.Reset()
 			}
 
 			// Now reload the content...
 		}
-		tmpl.Execute(w, stateForTemplate(state))
+		tmpl.Execute(w, stateForTemplate(state, score))
 	})
 	http.ListenAndServe(":8080", nil)
 }
 
-func stateForTemplate(state rules.Gamestate) LoveLetterState {
+func stateForTemplate(state rules.Gamestate, score []int) LoveLetterState {
 	fmt.Println(state)
 
 	data := LoveLetterState{
 		RevealedCards: state.Faceup.String(),
 		Score: Score{
-			You:      8,
-			Computer: 2,
+			You:      score[0],
+			Computer: score[1],
 		},
 		PlayedCards: PlayedCards{
 			You:      state.Discards[0].String(),
