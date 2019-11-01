@@ -313,7 +313,7 @@ func (state *Gamestate) PlayCard(action Action) {
 			break
 		}
 		targetCard := state.CardInHand[targetPlayer]
-		state.logPlayer(state.ActivePlayer, "played a Guard, guessing "+targetCard.String())
+		state.logPlayer(state.ActivePlayer, "played a Guard, guessing "+action.SelectedCard.String())
 		if targetCard == action.SelectedCard && targetCard != Guard {
 			state.eliminatePlayer(targetPlayer)
 		}
