@@ -1,12 +1,15 @@
 package montecarlo
 
 import (
+	"bufio"
+	"encoding/binary"
 	"fmt"
 	"love-letter-ai/gamemaster"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
 	"math/rand"
+	"os"
 )
 
 type QPlayer struct {
@@ -105,4 +108,92 @@ func (qp *QPlayer) SaveState(si gamemaster.StateInfo) {
 		qp.qf[s].sum /= 2
 		qp.qf[s].count /= 2
 	}
+}
+
+type fileHeader struct {
+	Version              uint32
+	Epsilon              float32
+	ActionSpaceMagnitude uint64
+}
+
+func (qp QPlayer) SaveToFile(path string) error {
+	file, err := os.Create(path)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	length := len(qp.qf)
+	writer := bufio.NewWriter(file)
+
+	err = binary.Write(writer, binary.BigEndian, fileHeader{
+		Version:              1,
+		Epsilon:              qp.epsilon,
+		ActionSpaceMagnitude: uint64(length),
+	})
+	if err != nil {
+		return err
+	}
+
+	by := make([]byte, 4)
+	for i, val := range qp.qf {
+		if i%(length/100) == 0 {
+			fmt.Printf("\rSaving %2d%%", i*100/length)
+		}
+
+		by[0] = byte(val.sum & 0xFF)
+		by[1] = byte(val.sum >> 8)
+		by[2] = byte(val.count & 0xFF)
+		by[3] = byte(val.count >> 8)
+
+		if _, err := writer.Write(by); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("\rSaved 100%%\n")
+
+	return writer.Flush()
+}
+
+func (qp *QPlayer) LoadFromFile(path string) error {
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	length := len(qp.qf)
+
+	reader := bufio.NewReader(file)
+	header := &fileHeader{}
+	err = binary.Read(reader, binary.BigEndian, header)
+	if err != nil {
+		return err
+	}
+	if header.Version != 1 {
+		return fmt.Errorf("Cannot load MC weights from version not 1 (%d)", header.Version)
+	}
+	if int(header.ActionSpaceMagnitude) != length {
+		return fmt.Errorf("Cannot load MC weights from file size not %d (%d)", state.ActionSpaceMagnitude, header.ActionSpaceMagnitude)
+	}
+	qp.epsilon = header.Epsilon
+
+	by := make([]byte, 4)
+	for i := range qp.qf {
+		if i%(length/100) == 0 {
+			fmt.Printf("\rLoading %2d%%", i*100/length)
+		}
+
+		if _, err := reader.Read(by); err != nil {
+			return err
+		}
+
+		qp.qf[i] = Value{
+			sum:   uint16(by[0]) | uint16(by[1])<<8,
+			count: uint16(by[2]) | uint16(by[3])<<8,
+		}
+	}
+	fmt.Printf("\rLoaded 100%%\n")
+
+	return nil
 }

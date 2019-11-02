@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"love-letter-ai/gamemaster"
 	"love-letter-ai/montecarlo"
@@ -8,32 +9,53 @@ import (
 	"love-letter-ai/rules"
 )
 
-const (
-	rounds = 1000000000
-)
+var loadPath = flag.String("load", "res/weights/mc.dat", "Path to the file to load weights")
+var savePath = flag.String("save", "res/weights/mc.dat", "Path to the file to save weights")
+var epsilon = flag.Float64("epsilon", 0.3, "Value of the starting epsilon")
+var epsilonDecay = flag.Float64("epsilondecay", 0.7, "Factor for scaling epsilon after each training epoch")
+var nEpochs = flag.Int("epochs", 5, "Number of epochs")
+var nTraces = flag.Int("traces", 20, "Number of game traces to print after each epoch")
+var nGames = flag.Int("games", 1000000000, "Number of games per training epoch")
+var nTest = flag.Int("n", 1000, "Number of games played in each test against random")
 
 func main() {
-	epsilon := float32(0.3)
-	pl := montecarlo.NewQPlayer(epsilon)
+	flag.Parse()
+
+	pl := montecarlo.NewQPlayer(float32(*epsilon))
+	var err error
+
+	if *loadPath != "" {
+		err = pl.LoadFromFile(*loadPath)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	fmt.Println("Running vs random...")
-	pl.TrainWithPlayerPolicy(rounds, &players.RandomPlayer{})
-	printTraces(20, pl)
-	fightRandom(1000, pl)
+	pl.TrainWithPlayerPolicy(*nGames, &players.RandomPlayer{})
+	printTraces(*nTraces, pl)
+	fightRandom(*nTest, pl)
 
-	for j := 0; j < 5; j++ {
-		epsilon *= 0.7
-		pl.SetEpsilon(epsilon)
+	for j := 0; j < *nEpochs; j++ {
+		*epsilon *= *epsilonDecay
+		pl.SetEpsilon(float32(*epsilon))
 		fmt.Printf("Running vs self %d...\n", j+1)
-		pl.TrainWithSelfPolicy(rounds)
-		printTraces(20, pl)
-		fightRandom(1000, pl)
+		pl.TrainWithSelfPolicy(*nGames)
+		printTraces(*nTraces, pl)
+		fightRandom(*nTest, pl)
 	}
 
 	pl.SetEpsilon(0.0)
 	fmt.Printf("\n\nPlaying greedily...\n")
-	printTraces(50, pl)
-	fightRandom(1000, pl)
+	printTraces(*nTraces, pl)
+	fightRandom(*nTest, pl)
+
+	if *savePath != "" {
+		err := pl.SaveToFile(*savePath)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func printTraces(n int, pl *montecarlo.QPlayer) {

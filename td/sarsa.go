@@ -1,6 +1,8 @@
 package td
 
 import (
+	"bufio"
+	"encoding/binary"
 	"fmt"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
@@ -176,4 +178,83 @@ func (sarsa Sarsa) greedyAction(st int) (*rules.Action, int) {
 	} else {
 		return nil, 0
 	}
+}
+
+type fileHeader struct {
+	Version              uint32
+	Epsilon              float32
+	Alpha                float32
+	Gamma                float32
+	ActionSpaceMagnitude uint64
+}
+
+func (sarsa Sarsa) SaveToFile(path string) error {
+	file, err := os.Create(path)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	length := len(sarsa.qf)
+	writer := bufio.NewWriter(file)
+
+	err = binary.Write(writer, binary.BigEndian, fileHeader{
+		Version:              1,
+		Epsilon:              sarsa.Epsilon,
+		Alpha:                sarsa.Alpha,
+		Gamma:                sarsa.Gamma,
+		ActionSpaceMagnitude: uint64(length),
+	})
+	if err != nil {
+		return err
+	}
+
+	for i, val := range sarsa.qf {
+		if i%(length/100) == 0 {
+			fmt.Printf("\rSaving %2d%%", i*100/length)
+		}
+		if err := binary.Write(writer, binary.BigEndian, val); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("\rSaved 100%%\n")
+
+	return writer.Flush()
+}
+
+func (sarsa *Sarsa) LoadFromFile(path string) error {
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	length := len(sarsa.qf)
+
+	reader := bufio.NewReader(file)
+	header := &fileHeader{}
+	if err = binary.Read(reader, binary.BigEndian, header); err != nil {
+		return err
+	}
+	if header.Version != 1 {
+		return fmt.Errorf("Cannot load SARSA weights from version not 1 (%d)", header.Version)
+	}
+	if int(header.ActionSpaceMagnitude) != length {
+		return fmt.Errorf("Cannot load SARSA weights from file size not %d (%d)", state.ActionSpaceMagnitude, header.ActionSpaceMagnitude)
+	}
+	sarsa.Epsilon = header.Epsilon
+	sarsa.Alpha = header.Alpha
+	sarsa.Gamma = header.Gamma
+
+	for i := range sarsa.qf {
+		if i%(length/100) == 0 {
+			fmt.Printf("\rLoading %2d%%", i*100/length)
+		}
+		if err := binary.Read(reader, binary.BigEndian, &sarsa.qf[i]); err != nil {
+			return nil
+		}
+	}
+	fmt.Printf("\rLoaded 100%%\n")
+
+	return nil
 }
