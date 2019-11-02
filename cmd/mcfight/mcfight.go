@@ -27,7 +27,9 @@ func main() {
 	if *loadPath != "" {
 		err = pl.LoadFromFile(*loadPath)
 		if err != nil {
-			panic(err)
+			// Okay, no file, print a warning and keep going
+			fmt.Println("WARNING: Could not find the file you wanted to load, so proceeding with newly initialized MC")
+			pl = montecarlo.NewQPlayer(float32(*epsilon))
 		}
 	}
 

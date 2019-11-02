@@ -31,7 +31,9 @@ func main() {
 	if *loadPath != "" {
 		err = sar.LoadFromFile(*loadPath)
 		if err != nil {
-			panic(err)
+			// Okay, no file, print a warning and keep going
+			fmt.Println("WARNING: Could not find the file you wanted to load, so proceeding with newly initialized SARSA")
+			sar = td.NewSarsa(float32(*epsilon), float32(*alpha), float32(*gamma))
 		}
 	}
 
