@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"love-letter-ai/gamemaster"
 	"love-letter-ai/players"
@@ -8,40 +9,41 @@ import (
 	"love-letter-ai/td"
 )
 
-const (
-	rounds       = 10000000
-	loops        = 1000
-	gamma        = 1
-	epsilonStart = 0.3
-	alphaDecay   = 0.995
-	epsilonDecay = 0.7
-	alphaStart   = 0.3
-)
+var gamma = flag.Float64("gamma", 1, "Value of the starting gamma")
+var epsilon = flag.Float64("epsilon", 0.3, "Value of the starting epsilon")
+var epsilonDecay = flag.Float64("epsilondecay", 0.7, "Factor for scaling epsilon after each training epoch")
+var epsilonDecayPeriod = flag.Int("epsilondecayperiod", 100, "Number of training epochs between each epsilon adjustment")
+var alpha = flag.Float64("*alpha", 0.3, "Value of the starting alpha")
+var alphaDecay = flag.Float64("alphadecay", 0.995, "Factor for scaling alpha after each training epoch")
+var nEpochs = flag.Int("epochs", 1000, "Number of epochs")
+var nTraces = flag.Int("traces", 50, "Number of game traces to print after each epoch")
+var nGames = flag.Int("games", 1000000000, "Number of games per training epoch")
+var nTest = flag.Int("n", 10000, "Number of games played in each test against random")
 
 func main() {
-	alpha := float32(alphaStart)
-	epsilon := float32(epsilonStart)
-	sar := td.NewSarsa(epsilon, alpha, gamma)
+	flag.Parse()
+
+	sar := td.NewSarsa(float32(*epsilon), float32(*alpha), float32(*gamma))
 	pl := sar.NewPlayer()
 
-	for j := 0; j < loops; j++ {
+	for j := 0; j < *nEpochs; j++ {
 		fmt.Printf("Running vs self %d...\n", j+1)
-		sar.Train(rounds)
+		sar.Train(*nGames)
 
-		fightRandom(10000, pl)
+		fightRandom(*nTest, pl)
 
-		alpha *= alphaDecay
-		sar.Alpha = alpha
+		*alpha *= *alphaDecay
+		sar.Alpha = float32(*alpha)
 
-		if (j % 100) == 0 {
-			epsilon *= epsilonDecay
-			sar.Epsilon = epsilon
+		if (j % *epsilonDecayPeriod) == 0 {
+			*epsilon *= *epsilonDecay
+			sar.Epsilon = float32(*epsilon)
 		}
 	}
 
 	fmt.Printf("\n\nPlaying greedily...\n")
-	printTraces(50, pl, sar)
-	fightRandom(10000, pl)
+	printTraces(*nTraces, pl, sar)
+	fightRandom(*nTest, pl)
 }
 
 func printTraces(n int, pl players.Player, sar *td.Sarsa) {
