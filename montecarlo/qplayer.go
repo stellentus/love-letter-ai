@@ -2,7 +2,6 @@ package montecarlo
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"love-letter-ai/gamemaster"
@@ -112,8 +111,8 @@ func (qp *QPlayer) SaveState(si gamemaster.StateInfo) {
 }
 
 type fileHeader struct {
-	version              uint32
-	epsilon              float32
+	Version              uint32
+	Epsilon              float32
 	ActionSpaceMagnitude uint64
 }
 
@@ -126,17 +125,12 @@ func (qp QPlayer) SaveToFile(path string) error {
 
 	writer := bufio.NewWriter(file)
 
-	var buf bytes.Buffer
-	err = binary.Write(&buf, binary.BigEndian, fileHeader{
-		version:              1,
-		epsilon:              qp.epsilon,
+	err = binary.Write(writer, binary.BigEndian, fileHeader{
+		Version:              1,
+		Epsilon:              qp.epsilon,
 		ActionSpaceMagnitude: state.ActionSpaceMagnitude,
 	})
 	if err != nil {
-		return err
-	}
-
-	if _, err := writer.Write(buf.Bytes()); err != nil {
 		return err
 	}
 
