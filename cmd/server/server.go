@@ -46,7 +46,6 @@ func main() {
 	}
 	state.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
 
-	tmpl := template.Must(template.ParseFiles("../../res/templates/index.template.html"))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "POST":
@@ -90,7 +89,10 @@ func main() {
 
 			// Now reload the content...
 		}
-		tmpl.Execute(w, stateForTemplate(state, score))
+		err := template.Must(template.ParseFiles("../../res/templates/index.template.html")).Execute(w, stateForTemplate(state, score))
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
 	})
 	http.ListenAndServe(":8080", nil)
 }
