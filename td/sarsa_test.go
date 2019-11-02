@@ -1,6 +1,7 @@
 package td
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,6 +22,7 @@ func TestFileLoadSave(t *testing.T) {
 	}
 
 	err := sarsa.SaveToFile(path)
+	defer os.Remove(path)
 	assert.NoError(t, err)
 
 	sarsa2 := newTestSarsalayer(epsilon, alpha, gamma, tableSize)

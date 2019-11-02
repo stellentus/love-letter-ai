@@ -1,6 +1,7 @@
 package montecarlo
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,6 +21,7 @@ func TestFileLoadSave(t *testing.T) {
 	}
 
 	err := qp.SaveToFile(path)
+	defer os.Remove(path)
 	assert.NoError(t, err)
 
 	qp2 := newTestQPlayer(epsilon, tableSize)
