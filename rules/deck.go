@@ -54,7 +54,7 @@ func (c Card) String() string {
 
 func CardFromString(s string) Card {
 	for c, str := range nameOfCard {
-		if str == s {
+		if strings.EqualFold(str, s) {
 			return c
 		}
 	}
