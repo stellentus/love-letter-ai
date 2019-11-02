@@ -123,18 +123,18 @@ func (qp QPlayer) SaveToFile(path string) error {
 		return err
 	}
 
+	length := len(qp.qf)
 	writer := bufio.NewWriter(file)
 
 	err = binary.Write(writer, binary.BigEndian, fileHeader{
 		Version:              1,
 		Epsilon:              qp.epsilon,
-		ActionSpaceMagnitude: state.ActionSpaceMagnitude,
+		ActionSpaceMagnitude: uint64(length),
 	})
 	if err != nil {
 		return err
 	}
 
-	length := len(qp.qf)
 	by := make([]byte, 4)
 	for i, val := range qp.qf {
 		if i%(length/100) == 0 {
