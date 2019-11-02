@@ -9,6 +9,8 @@ import (
 	"love-letter-ai/td"
 )
 
+var loadPath = flag.String("load", "res/weights/sarsa.dat", "Path to the file to load weights")
+var savePath = flag.String("save", "res/weights/sarsa.dat", "Path to the file to save weights")
 var gamma = flag.Float64("gamma", 1, "Value of the starting gamma")
 var epsilon = flag.Float64("epsilon", 0.3, "Value of the starting epsilon")
 var epsilonDecay = flag.Float64("epsilondecay", 0.7, "Factor for scaling epsilon after each training epoch")
@@ -24,6 +26,14 @@ func main() {
 	flag.Parse()
 
 	sar := td.NewSarsa(float32(*epsilon), float32(*alpha), float32(*gamma))
+
+	if *loadPath != "" {
+		err = sar.LoadFromFile(*loadPath)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	pl := sar.NewPlayer()
 
 	for j := 0; j < *nEpochs; j++ {
@@ -44,6 +54,13 @@ func main() {
 	fmt.Printf("\n\nPlaying greedily...\n")
 	printTraces(*nTraces, pl, sar)
 	fightRandom(*nTest, pl)
+
+	if *savePath != "" {
+		err := sar.SaveToFile(*savePath)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func printTraces(n int, pl players.Player, sar *td.Sarsa) {
