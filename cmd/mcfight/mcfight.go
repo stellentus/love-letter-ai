@@ -42,9 +42,11 @@ func main() {
 	printTraces(*nTraces, pl)
 	fightRandom(*nTest, pl)
 
-	err := pl.SaveToFile(*savePath)
-	if err != nil {
-		panic(err)
+	if *savePath != "" {
+		err := pl.SaveToFile(*savePath)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
