@@ -7,6 +7,8 @@ import (
 	"love-letter-ai/montecarlo"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
+	"os"
+	"path/filepath"
 )
 
 var loadPath = flag.String("load", "", "Path to the file to load weights")
@@ -20,6 +22,10 @@ var nTest = flag.Int("n", 1000, "Number of games played in each test against ran
 
 func main() {
 	flag.Parse()
+
+	if _, err := os.Stat(filepath.Dir(*savePath)); os.IsNotExist(err) {
+		panic("The path you plan to save at is a non-existent directory")
+	}
 
 	pl := montecarlo.NewQPlayer(float32(*epsilon))
 	var err error

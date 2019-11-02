@@ -7,6 +7,8 @@ import (
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
 	"love-letter-ai/td"
+	"os"
+	"path/filepath"
 )
 
 var loadPath = flag.String("load", "", "Path to the file to load weights")
@@ -24,6 +26,10 @@ var nTest = flag.Int("n", 10000, "Number of games played in each test against ra
 
 func main() {
 	flag.Parse()
+
+	if _, err := os.Stat(filepath.Dir(*savePath)); os.IsNotExist(err) {
+		panic("The path you plan to save at is a non-existent directory")
+	}
 
 	sar := td.NewSarsa(float32(*epsilon), float32(*alpha), float32(*gamma))
 	var err error
