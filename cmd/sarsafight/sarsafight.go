@@ -27,10 +27,6 @@ var nTest = flag.Int("n", 10000, "Number of games played in each test against ra
 func main() {
 	flag.Parse()
 
-	if _, err := os.Stat(filepath.Dir(*savePath)); os.IsNotExist(err) {
-		panic("The path you plan to save at is a non-existent directory")
-	}
-
 	sar := td.NewSarsa(float32(*epsilon), float32(*alpha), float32(*gamma))
 	var err error
 
@@ -40,7 +36,16 @@ func main() {
 			// Okay, no file, print a warning and keep going
 			fmt.Println("WARNING: Could not find the file you wanted to load, so proceeding with newly initialized SARSA")
 			sar = td.NewSarsa(float32(*epsilon), float32(*alpha), float32(*gamma))
+		} else {
+			fmt.Println("The weights were loaded from '" + *loadPath + "'")
 		}
+	}
+
+	if *savePath != "" {
+		if _, err := os.Stat(filepath.Dir(*savePath)); os.IsNotExist(err) {
+			panic("The path you plan to save at is a non-existent directory")
+		}
+		fmt.Println("The final weights will be saved at '" + *savePath + "'")
 	}
 
 	pl := sar.NewPlayer()

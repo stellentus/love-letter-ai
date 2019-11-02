@@ -23,10 +23,6 @@ var nTest = flag.Int("n", 1000, "Number of games played in each test against ran
 func main() {
 	flag.Parse()
 
-	if _, err := os.Stat(filepath.Dir(*savePath)); os.IsNotExist(err) {
-		panic("The path you plan to save at is a non-existent directory")
-	}
-
 	pl := montecarlo.NewQPlayer(float32(*epsilon))
 	var err error
 
@@ -36,7 +32,16 @@ func main() {
 			// Okay, no file, print a warning and keep going
 			fmt.Println("WARNING: Could not find the file you wanted to load, so proceeding with newly initialized MC")
 			pl = montecarlo.NewQPlayer(float32(*epsilon))
+		} else {
+			fmt.Println("The weights were loaded from '" + *loadPath + "'")
 		}
+	}
+
+	if *savePath != "" {
+		if _, err := os.Stat(filepath.Dir(*savePath)); os.IsNotExist(err) {
+			panic("The path you plan to save at is a non-existent directory")
+		}
+		fmt.Println("The final weights will be saved at '" + *savePath + "'")
 	}
 
 	fmt.Println("Running vs random...")
