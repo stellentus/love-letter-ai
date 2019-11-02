@@ -21,7 +21,17 @@ var nTest = flag.Int("n", 1000, "Number of games played in each test against ran
 func main() {
 	flag.Parse()
 
-	pl := montecarlo.NewQPlayer(float32(*epsilon))
+	var pl *montecarlo.QPlayer
+	var err error
+
+	if *loadPath != "" {
+		pl, err = montecarlo.LoadFromFile(*loadPath)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		pl = montecarlo.NewQPlayer(float32(*epsilon))
+	}
 
 	fmt.Println("Running vs random...")
 	pl.TrainWithPlayerPolicy(*nGames, &players.RandomPlayer{})

@@ -154,3 +154,52 @@ func (qp QPlayer) SaveToFile(path string) error {
 
 	return writer.Flush()
 }
+
+func LoadFromFile(path string) (*QPlayer, error) {
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	reader := bufio.NewReader(file)
+	header := &fileHeader{}
+	err = binary.Read(reader, binary.BigEndian, header)
+	if err != nil {
+		return nil, err
+	}
+	if header.Version != 1 {
+		return nil, fmt.Errorf("Cannot load MC weights from version not 1 (%d)", header.Version)
+	}
+	if header.ActionSpaceMagnitude != state.ActionSpaceMagnitude {
+		return nil, fmt.Errorf("Cannot load MC weights from file size not %d (%d)", state.ActionSpaceMagnitude, header.ActionSpaceMagnitude)
+	}
+
+	qp := NewQPlayer(header.Epsilon)
+
+	length := state.ActionSpaceMagnitude
+	by := make([]byte, 4)
+	val := Value{}
+	for i := range qp.qf {
+		if i%(length/100) == 0 {
+			fmt.Printf("\rLoading %2d%%", i*100/length)
+		}
+
+		if _, err := reader.Read(by); err != nil {
+			return nil, err
+		}
+
+		val.sum = uint16(by[0]) | uint16(by[1])<<8
+		val.count = uint16(by[2]) | uint16(by[3])<<8
+		qp.qf[i] = val
+
+		// TODO or is this faster?
+		// qp.qf[i] = Value{
+		// 	sum:   uint16(by[0]) | uint16(by[1])<<8,
+		// 	count: uint16(by[2]) | uint16(by[3])<<8,
+		// }
+	}
+	fmt.Printf("\rLoaded 100%%\n")
+
+	return qp, nil
+}
