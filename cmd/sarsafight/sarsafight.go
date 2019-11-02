@@ -9,8 +9,8 @@ import (
 	"love-letter-ai/td"
 )
 
-var loadPath = flag.String("load", "res/weights/sarsa.dat", "Path to the file to load weights")
-var savePath = flag.String("save", "res/weights/sarsa.dat", "Path to the file to save weights")
+var loadPath = flag.String("load", "", "Path to the file to load weights")
+var savePath = flag.String("save", "", "Path to the file to save weights")
 var gamma = flag.Float64("gamma", 1, "Value of the starting gamma")
 var epsilon = flag.Float64("epsilon", 0.3, "Value of the starting epsilon")
 var epsilonDecay = flag.Float64("epsilondecay", 0.7, "Factor for scaling epsilon after each training epoch")
