@@ -492,6 +492,9 @@ func (state *Gamestate) triggerGameEnd() {
 				tie = true // We don't deal with this
 			}
 		}
+		state.logPlayer(state.Winner, fmt.Sprintf("won (%d to %d)", scores[0], scores[1]))
+	} else {
+		state.logPlayer(state.Winner, "won ("+state.CardInHand[0].String()+" vs "+state.CardInHand[1].String()+")")
 	}
 
 	state.GameEnded = true
