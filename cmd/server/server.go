@@ -46,6 +46,8 @@ func main() {
 	}
 	state.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
 
+	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("../../res/static"))))
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "POST":
