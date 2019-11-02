@@ -1,11 +1,26 @@
 package rules
 
-import "math/rand"
+import (
+	"math/rand"
+	"strings"
+)
 
 type Card int
 
 // Stack is an ordered stack of cards.
 type Stack []Card
+
+func (st Stack) String() string {
+	return strings.Join(st.Strings(), ", ")
+}
+
+func (st Stack) Strings() []string {
+	strs := make([]string, len(st))
+	for i, c := range st {
+		strs[i] = c.String()
+	}
+	return strs
+}
 
 // For now, the Card value is its face value.
 const (
@@ -20,6 +35,31 @@ const (
 	Princess
 	numberOfCards
 )
+
+var nameOfCard = map[Card]string{
+	Guard:    "Guard",
+	Priest:   "Priest",
+	Baron:    "Baron",
+	Handmaid: "Handmaid",
+	Prince:   "Prince",
+	King:     "King",
+	Countess: "Countess",
+	Princess: "Princess",
+}
+
+func (c Card) String() string {
+	str, _ := nameOfCard[c]
+	return str
+}
+
+func CardFromString(s string) Card {
+	for c, str := range nameOfCard {
+		if strings.EqualFold(str, s) {
+			return c
+		}
+	}
+	return None
+}
 
 // Deck contains counts of Cards
 type Deck [numberOfCards]int

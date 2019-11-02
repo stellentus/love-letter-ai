@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Love Letter AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+    <script src="static/loveletter.js"></script>
+  </head>
+
+  <body class="bg-light">
+    <div class="alert alert-success">
+      <div class="container">
+        <h1>Love Letter AI</h1>
+        <div>Developed by <a href="https://bellstone.ca">Bellstone Engineering</a></div>
+        <!-- TODO: Add a link to the rules -->
+      </div>
+    </div>
+    <div class="container">
+
+      <h2>Current Score {{.Score.You}}-{{.Score.Computer}}</h2>
+
+      <div class="row">
+        <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
+          <div class="card-header font-weight-bold">Revealed cards</div>
+          <div class="card-body">
+            {{range .RevealedCards}}<div>{{.}}</div>{{end}}
+          </div>
+        </div></div>
+
+        <!-- TODO LastPlay could be "Guard, guessing you had a princess." -->
+        <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
+          <div class="card-header font-weight-bold">Last Turn</div>
+          <div class="card-body">
+            {{with .LastPlay}}{{.}}{{end}}
+          </div>
+        </div></div>
+
+        <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
+          <div class="card-header font-weight-bold">You</div>
+          <div class="card-body">
+            {{range .PlayedCards.You}}<div>{{.}}</div>{{end}}
+          </div>
+        </div></div>
+
+        <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
+          <div class="card-header font-weight-bold">Computer</div>
+          <div class="card-body">
+            {{range .PlayedCards.Computer}}<div>{{.}}</div>{{end}}
+          </div>
+        </div></div>
+      </div>
+
+
+      <h2>Your Turn</h2>
+      <form action="" method="POST" role="form" class="form-horizontal" id="playform">
+        <input type=hidden id=cards name=cards value="">
+        <input type=hidden id=targets name=targets value="">
+        <input type=hidden id=guess name=guess value="">
+
+        <label>Choose a card to discard</label>
+        <div class="btn-group" data-toggle="buttons">
+          <button class="btn btn-primary" type="button" onclick='playcard("card1","{{.Card1}}")'>{{.Card1}}</button>
+          <button class="btn btn-primary" type="button" onclick='playcard("card2","{{.Card2}}")'>{{.Card2}}</button>
+        </div>
+
+        <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" id="princemodal" aria-labelledby="princemodal" aria-hidden="true">
+          <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+              <label>Target Player</label>
+              <div class="btn-group-vertical" data-toggle="buttons">
+                <button class="btn btn-secondary" type="button" onclick='playprince("self")'>Self</button>
+                <button class="btn btn-secondary" type="button" onclick='playprince("computer")'>Computer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" id="guardmodal" aria-labelledby="guardmodal" aria-hidden="true">
+          <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+              <label>Guess (for guard)</label>
+              <div class="btn-group-vertical" data-toggle="buttons">
+                <button class="btn btn-secondary" type="button" onclick='playguard("priest")'>Priest</button>
+                <button class="btn btn-secondary" type="button" onclick='playguard("baron")'>Baron</button>
+                <button class="btn btn-secondary" type="button" onclick='playguard("handmaid")'>Handmaid</button>
+                <button class="btn btn-secondary" type="button" onclick='playguard("prince")'>Prince</button>
+                <button class="btn btn-secondary" type="button" onclick='playguard("king")'>King</button>
+                <button class="btn btn-secondary" type="button" onclick='playguard("countess")'>Countess</button>
+                <button class="btn btn-secondary" type="button" onclick='playguard("princess")'>Princess</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div>{{.EventLog}}</div>
+
+    </div>
+  </body>
+</html>
