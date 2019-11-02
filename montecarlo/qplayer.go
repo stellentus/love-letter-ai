@@ -1,12 +1,16 @@
 package montecarlo
 
 import (
+	"bufio"
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"love-letter-ai/gamemaster"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
 	"math/rand"
+	"os"
 )
 
 type QPlayer struct {
@@ -105,4 +109,54 @@ func (qp *QPlayer) SaveState(si gamemaster.StateInfo) {
 		qp.qf[s].sum /= 2
 		qp.qf[s].count /= 2
 	}
+}
+
+type fileHeader struct {
+	version              uint32
+	epsilon              float32
+	ActionSpaceMagnitude uint64
+}
+
+func (qp QPlayer) SaveToFile(path string) error {
+	file, err := os.Create(path)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	writer := bufio.NewWriter(file)
+
+	var buf bytes.Buffer
+	err = binary.Write(&buf, binary.BigEndian, fileHeader{
+		version:              1,
+		epsilon:              qp.epsilon,
+		ActionSpaceMagnitude: state.ActionSpaceMagnitude,
+	})
+	if err != nil {
+		return err
+	}
+
+	if _, err := writer.Write(buf.Bytes()); err != nil {
+		return err
+	}
+
+	length := len(qp.qf)
+	by := make([]byte, 4)
+	for i, val := range qp.qf {
+		if i%(length/100) == 0 {
+			fmt.Printf("\rSaving %2d%%", i*100/length)
+		}
+
+		by[0] = byte(val.sum & 0xFF)
+		by[1] = byte(val.sum >> 8)
+		by[2] = byte(val.count & 0xFF)
+		by[3] = byte(val.count >> 8)
+
+		if _, err := writer.Write(by); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("\rSaved 100%%\n")
+
+	return writer.Flush()
 }

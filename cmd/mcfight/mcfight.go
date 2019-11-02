@@ -9,6 +9,8 @@ import (
 	"love-letter-ai/rules"
 )
 
+var loadPath = flag.String("load", "res/weights/mc.dat", "Path to the file to load weights")
+var savePath = flag.String("save", "res/weights/mc.dat", "Path to the file to save weights")
 var epsilon = flag.Float64("epsilon", 0.3, "Value of the starting epsilon")
 var epsilonDecay = flag.Float64("epsilondecay", 0.7, "Factor for scaling epsilon after each training epoch")
 var nEpochs = flag.Int("epochs", 5, "Number of epochs")
@@ -39,6 +41,11 @@ func main() {
 	fmt.Printf("\n\nPlaying greedily...\n")
 	printTraces(*nTraces, pl)
 	fightRandom(*nTest, pl)
+
+	err := pl.SaveToFile(*savePath)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func printTraces(n int, pl *montecarlo.QPlayer) {
