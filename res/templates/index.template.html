@@ -11,92 +11,96 @@
 
   <body class="bg-light">
     <div class="alert alert-success">
-      <h1>Love Letter AI</h1>
-      <div>Developed by <a href="https://bellstone.ca">Bellstone Engineering</a></div>
-      <!-- TODO: Add a link to the rules -->
+      <div class="container">
+        <h1>Love Letter AI</h1>
+        <div>Developed by <a href="https://bellstone.ca">Bellstone Engineering</a></div>
+        <!-- TODO: Add a link to the rules -->
+      </div>
     </div>
+    <div class="container">
 
-    <h2>Current Score {{.Score.You}}-{{.Score.Computer}}</h2>
+      <h2>Current Score {{.Score.You}}-{{.Score.Computer}}</h2>
 
-    <div class="row">
-      <div class="col-md-3 col-lg-2 d-flex align-items-stretch"><div class="card">
-        <div class="card-header font-weight-bold">Revealed cards</div>
-        <div class="card-body">
-          {{range .RevealedCards}}<div>{{.}}</div>{{end}}
+      <div class="row">
+        <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
+          <div class="card-header font-weight-bold">Revealed cards</div>
+          <div class="card-body">
+            {{range .RevealedCards}}<div>{{.}}</div>{{end}}
+          </div>
+        </div></div>
+
+        <!-- TODO LastPlay could be "Guard, guessing you had a princess." -->
+        <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
+          <div class="card-header font-weight-bold">Last Turn</div>
+          <div class="card-body">
+            {{with .LastPlay}}{{.}}{{end}}
+          </div>
+        </div></div>
+
+        <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
+          <div class="card-header font-weight-bold">You</div>
+          <div class="card-body">
+            {{range .PlayedCards.You}}<div>{{.}}</div>{{end}}
+          </div>
+        </div></div>
+
+        <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
+          <div class="card-header font-weight-bold">Computer</div>
+          <div class="card-body">
+            {{range .PlayedCards.Computer}}<div>{{.}}</div>{{end}}
+          </div>
+        </div></div>
+      </div>
+
+
+      <h2>Your Turn</h2>
+      <form action="index.html" method="POST" role="form" class="form-horizontal">
+        <label>Choose a card to discard</label>
+        <div class="btn-group" data-toggle="buttons">
+          <label class="btn btn-primary">
+            <input type="radio" id="cards" name="cards" value="card1"> {{.Card1}}
+          </label>
+          <label class="btn btn-primary">
+            <input type="radio" id="cards" name="cards" value="card2"> {{.Card2}}
+          </label>
         </div>
-      </div></div>
-
-      <div class="col-md-3 col-lg-2 d-flex align-items-stretch"><div class="card">
-        <div class="card-header font-weight-bold">You</div>
-        <div class="card-body">
-          {{range .PlayedCards.You}}<div>{{.}}</div>{{end}}
+        <label>Target player</label>
+        <div class="btn-group" data-toggle="buttons">
+          <label class="btn btn-primary">
+            <input type="radio" id="targets" name="targets" value="self"> Self
+          </label>
+          <label class="btn btn-primary">
+            <input type="radio" id="targets" name="targets" value="computer" checked> Computer
+          </label>
         </div>
-      </div></div>
-
-      <div class="col-md-3 col-lg-2 d-flex align-items-stretch"><div class="card">
-        <div class="card-header font-weight-bold">Computer</div>
-        <div class="card-body">
-          {{range .PlayedCards.Computer}}<div>{{.}}</div>{{end}}
+        <label>Guess (for guard)</label>
+        <div class="btn-group" data-toggle="buttons">
+          <label class="btn btn-primary">
+            <input type="radio" id="guess" name="guess" value="Priest"> Priest
+          </label>
+          <label class="btn btn-primary">
+            <input type="radio" id="guess" name="guess" value="Baron"> Baron
+          </label>
+          <label class="btn btn-primary">
+            <input type="radio" id="guess" name="guess" value="Handmaid"> Handmaid
+          </label>
+          <label class="btn btn-primary">
+            <input type="radio" id="guess" name="guess" value="Prince"> Prince
+          </label>
+          <label class="btn btn-primary">
+            <input type="radio" id="guess" name="guess" value="King"> King
+          </label>
+          <label class="btn btn-primary">
+            <input type="radio" id="guess" name="guess" value="Countess"> Countess
+          </label>
+          <label class="btn btn-primary">
+            <input type="radio" id="guess" name="guess" value="Princess"> Princess
+          </label>
         </div>
-      </div></div>
+      </form>
+
+      <div>{{.EventLog}}</div>
+
     </div>
-
-    <h2>Last Turn</h2>
-    Computer played {{.LastPlay}}.
-    <!-- TODO LastPlay could be "Guard, guessing you had a princess." -->
-
-    <h2>Your Turn</h2>
-    <form action="index.html" method="POST" role="form" class="form-horizontal">
-      <label>Choose a card to discard</label>
-      <div class="btn-group" data-toggle="buttons">
-        <label class="btn btn-primary">
-          <input type="radio" id="cards" name="cards" value="card1"> {{.Card1}}
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" id="cards" name="cards" value="card2"> {{.Card2}}
-        </label>
-      </div>
-      <label>Target player</label>
-      <div class="btn-group" data-toggle="buttons">
-        <label class="btn btn-primary">
-          <input type="radio" id="targets" name="targets" value="self"> Self
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" id="targets" name="targets" value="computer" checked> Computer
-        </label>
-      </div>
-      <label>Guess (for guard)</label>
-      <div class="btn-group" data-toggle="buttons">
-        <label class="btn btn-primary">
-          <input type="radio" id="guess" name="guess" value="Priest"> Priest
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" id="guess" name="guess" value="Baron"> Baron
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" id="guess" name="guess" value="Handmaid"> Handmaid
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" id="guess" name="guess" value="Prince"> Prince
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" id="guess" name="guess" value="King"> King
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" id="guess" name="guess" value="Countess"> Countess
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" id="guess" name="guess" value="Princess"> Princess
-        </label>
-      </div>
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-          <button type="submit" class="btn btn-default">Play it!</button>
-        </div>
-      </div>
-    </form>
-
-    <div>{{.EventLog}}</div>
-
   </body>
 </html>
