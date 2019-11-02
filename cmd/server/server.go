@@ -1,15 +1,20 @@
 package main
 
 import (
+	"errors"
+	"flag"
 	"fmt"
 	"html/template"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
+	"love-letter-ai/montecarlo"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
+	"love-letter-ai/td"
 )
 
 type Score struct {
@@ -34,10 +39,40 @@ type LoveLetterState struct {
 
 const NUMBER_OF_PLAYERS = 2
 
+var (
+	sarsaFile = flag.String("sarsa", "", "Path to a sarsa file")
+	qFile     = flag.String("q", "", "Path to a Q learning file")
+)
+
+func exitIfError(err error, reason string ) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "exiting: %s\n%s\n", reason, err)
+		os.Exit(1)
+	}
+}
+
 func main() {
+	flag.Parse()
+	if *sarsaFile != "" && *qFile != "" {
+		exitIfError(errors.New("Can only specify one of -sarsa or -q"), "invalid arguments")
+	}
+
+	var comPlay players.Player
+	switch {
+	case *sarsaFile != "":
+		sarsa := td.NewSarsa(0, 0, 0)
+		exitIfError(sarsa.LoadFromFile(*sarsaFile), "loading sarsa file")
+		comPlay = sarsa.NewPlayer()
+	case *qFile != "":
+		q := montecarlo.NewQPlayer(0)
+		exitIfError(q.LoadFromFile(*qFile), "loading Q file")
+		comPlay = q
+	default:
+		comPlay = &players.RandomPlayer{}
+	}
+
 	rand.Seed(time.Now().UnixNano())
 
-	comPlay := &players.RandomPlayer{}
 	score := []int{0, 0} // Number of wins for each player
 
 	state, err := rules.NewGame(NUMBER_OF_PLAYERS)
