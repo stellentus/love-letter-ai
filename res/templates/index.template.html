@@ -18,14 +18,28 @@
 
     <h2>Current Score {{.Score.You}}-{{.Score.Computer}}</h2>
 
-    <h2>Revealed cards</h2>
-    {{.RevealedCards}}
+    <div class="row">
+      <div class="col-md-3 col-lg-2 d-flex align-items-stretch"><div class="card">
+        <div class="card-header font-weight-bold">Revealed cards</div>
+        <div class="card-body">
+          {{range .RevealedCards}}<div>{{.}}</div>{{end}}
+        </div>
+      </div></div>
 
-    <h2>You</h2>
-    {{.PlayedCards.You}}
+      <div class="col-md-3 col-lg-2 d-flex align-items-stretch"><div class="card">
+        <div class="card-header font-weight-bold">You</div>
+        <div class="card-body">
+          {{range .PlayedCards.You}}<div>{{.}}</div>{{end}}
+        </div>
+      </div></div>
 
-    <h2>Computer</h2>
-    {{.PlayedCards.Computer}}
+      <div class="col-md-3 col-lg-2 d-flex align-items-stretch"><div class="card">
+        <div class="card-header font-weight-bold">Computer</div>
+        <div class="card-body">
+          {{range .PlayedCards.Computer}}<div>{{.}}</div>{{end}}
+        </div>
+      </div></div>
+    </div>
 
     <h2>Last Turn</h2>
     Computer played {{.LastPlay}}.

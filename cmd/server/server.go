@@ -18,12 +18,12 @@ type Score struct {
 }
 
 type PlayedCards struct {
-	You      string
-	Computer string
+	You      []string
+	Computer []string
 }
 
 type LoveLetterState struct {
-	RevealedCards string
+	RevealedCards []string
 	Score
 	PlayedCards
 	LastPlay string
@@ -101,14 +101,14 @@ func stateForTemplate(state rules.Gamestate, score []int) LoveLetterState {
 	fmt.Println(state)
 
 	data := LoveLetterState{
-		RevealedCards: state.Faceup.String(),
+		RevealedCards: state.Faceup.Strings(),
 		Score: Score{
 			You:      score[0],
 			Computer: score[1],
 		},
 		PlayedCards: PlayedCards{
-			You:      state.Discards[0].String(),
-			Computer: state.Discards[1].String(),
+			You:      state.Discards[0].Strings(),
+			Computer: state.Discards[1].Strings(),
 		},
 		LastPlay: state.LastPlay[1].String(),
 		Card1:    state.CardInHand[0].String(),
