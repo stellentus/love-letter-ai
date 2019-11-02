@@ -11,16 +11,15 @@ type Card int
 type Stack []Card
 
 func (st Stack) String() string {
-	num := len(st)
-	if num == 0 {
-		return ""
-	}
+	return strings.Join(st.Strings(), ", ")
+}
 
-	strs := make([]string, num)
+func (st Stack) Strings() []string {
+	strs := make([]string, len(st))
 	for i, c := range st {
 		strs[i] = c.String()
 	}
-	return strings.Join(strs, ", ")
+	return strs
 }
 
 // For now, the Card value is its face value.
