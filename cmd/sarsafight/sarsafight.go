@@ -26,6 +26,7 @@ func main() {
 	flag.Parse()
 
 	sar := td.NewSarsa(float32(*epsilon), float32(*alpha), float32(*gamma))
+	var err error
 
 	if *loadPath != "" {
 		err = sar.LoadFromFile(*loadPath)
