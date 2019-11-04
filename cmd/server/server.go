@@ -153,7 +153,7 @@ func stateForTemplate(game rules.Gamestate, score []int) LoveLetterState {
 		Card1:       game.CardInHand[0].String(),
 		Card2:       game.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
 		EventLog:    template.HTML(strings.Join(game.EventLog.Events, "<br>")),
-		GameStateID: state.NewSimple(game).AsInt(),
+		GameStateID: state.NewSimple(game).AsIndex(),
 	}
 	return data
 }

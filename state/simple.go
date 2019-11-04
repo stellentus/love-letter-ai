@@ -45,10 +45,12 @@ func NewSimple(gs rules.Gamestate) Simple {
 	return simple
 }
 
-func (ss Simple) AsInt() int {
+// AsIndex converts the simple state into an array index.
+func (ss Simple) AsIndex() int {
 	return Index(ss.Discards, ss.RecentDraw, ss.OldCard, ss.OpponentCard, ss.ScoreDiff)
 }
 
-func (ss Simple) AsIntWithAction(act rules.Action) (int, int) {
+// AsIndexWithAction converts the simple state and action into an array index.
+func (ss Simple) AsIndexWithAction(act rules.Action) (int, int) {
 	return Indices(ss.Discards, ss.RecentDraw, ss.OldCard, ss.OpponentCard, ss.ScoreDiff, act)
 }

@@ -96,7 +96,7 @@ func (sarsa *Sarsa) Train(episodes int) {
 		}
 
 		// Now allow both players to update based on the end of the game.
-		sa, _ := state.NewSimple(sg).AsIntWithAction(rules.Action{})
+		sa, _ := state.NewSimple(sg).AsIndexWithAction(rules.Action{})
 		if sa < 0 {
 			panic(fmt.Sprintf("Negative state was calculated: %d", sa))
 		}
@@ -115,7 +115,7 @@ func (sarsa *Sarsa) Train(episodes int) {
 // PlayCard provides a suggested action for the provided state.
 // If it hasn't learned anything for this state, it plays randomly.
 func (sl *sarsaLearner) PlayCard(state state.Simple) rules.Action {
-	act, _ := sl.sarsa.greedyAction(state.AsInt())
+	act, _ := sl.sarsa.greedyAction(state.AsIndex())
 	if act == nil {
 		return (&players.RandomPlayer{}).PlayCard(state)
 	}
@@ -147,7 +147,7 @@ func (sl *sarsaLearner) updateLearning(gameEnded bool, sa int, reward float32) {
 // It will also choose a random action with probability Epsilon. This isn't exactly
 // Epsilon-greedy because it doesn't subtract the probability of the greedy action.
 func (sarsa Sarsa) epsilonGreedyAction(st state.Simple) (rules.Action, int) {
-	sNoAct := st.AsInt()
+	sNoAct := st.AsIndex()
 	act, sa := sarsa.greedyAction(sNoAct)
 	if act == nil || rand.Float32() < sarsa.Epsilon {
 		action := (&players.RandomPlayer{}).PlayCard(st)
