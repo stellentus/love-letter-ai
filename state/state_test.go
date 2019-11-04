@@ -64,14 +64,6 @@ func TestScoreDelta(t *testing.T) {
 	}
 }
 
-func TestDeckValues(t *testing.T) {
-	assert.EqualValues(t, 0, deckValue(rules.Deck{}), "Empty")
-	assert.EqualValues(t, 1, deckValue(rules.Deck{rules.Guard: 1}), "One guard")
-	assert.EqualValues(t, 3, deckValue(rules.Deck{rules.Guard: 3}), "Three guards")
-	assert.EqualValues(t, 8, deckValue(rules.Deck{rules.Guard: 2, rules.Priest: 1}), "Two guards and a priest walk into a bar...")
-	assert.EqualValues(t, deckSpaceMagnitude-1, deckValue(rules.DefaultDeck()), "Full")
-}
-
 func TestHandValues(t *testing.T) {
 	assert.EqualValues(t, 0, handValue(rules.Guard, rules.Guard, rules.Guard), "Lowest")
 	assert.EqualValues(t, 73, handValue(rules.Priest, rules.Priest, rules.Priest), "Priests")

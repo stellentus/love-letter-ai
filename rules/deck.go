@@ -152,3 +152,17 @@ func (stack Stack) Copy() Stack {
 	}
 	return stack2
 }
+
+const DeckSpaceMagnitude = 6 * 3 * 3 * 3 * 3 * 2 * 2 * 2
+
+func (sc Deck) AsInt() int {
+	// uses 12 bits
+	return sc[Guard] +
+		6*(sc[Priest]+
+			3*(sc[Baron]+
+				3*(sc[Handmaid]+
+					3*(sc[Prince]+
+						3*(sc[King]*4+
+							sc[Countess]*2+
+							sc[Princess])))))
+}
