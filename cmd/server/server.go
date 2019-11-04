@@ -31,10 +31,11 @@ type LoveLetterState struct {
 	RevealedCards []string
 	Score
 	PlayedCards
-	LastPlay string
-	Card1    string
-	Card2    string
-	EventLog template.HTML
+	LastPlay    string
+	Card1       string
+	Card2       string
+	EventLog    template.HTML
+	GameStateID int
 }
 
 const NUMBER_OF_PLAYERS = 2
@@ -44,7 +45,7 @@ var (
 	qFile     = flag.String("q", "", "Path to a Q learning file")
 )
 
-func exitIfError(err error, reason string ) {
+func exitIfError(err error, reason string) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "exiting: %s\n%s\n", reason, err)
 		os.Exit(1)
@@ -147,10 +148,11 @@ func stateForTemplate(state rules.Gamestate, score []int) LoveLetterState {
 			You:      state.Discards[0].Strings(),
 			Computer: state.Discards[1].Strings(),
 		},
-		LastPlay: state.LastPlay[1].String(),
-		Card1:    state.CardInHand[0].String(),
-		Card2:    state.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
-		EventLog: template.HTML(strings.Join(state.EventLog.Events, "<br>")),
+		LastPlay:    state.LastPlay[1].String(),
+		Card1:       state.CardInHand[0].String(),
+		Card2:       state.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
+		EventLog:    template.HTML(strings.Join(state.EventLog.Events, "<br>")),
+		GameStateID: players.NewSimpleState(state).AsInt(),
 	}
 	return data
 }
