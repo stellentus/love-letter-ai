@@ -18,7 +18,7 @@ type Gamestate struct {
 
 	// Discards contains a Stack for each player, showing their face-up cards.
 	// Note the top card here might not be the most recently played card if a Prince was played against this player.
-	Discards []Stack
+	Discards Stacks
 
 	// LastPlay contains the last card played by each player. This will often be the last card in the player's discard stack, but not always.
 	LastPlay Stack
@@ -26,7 +26,7 @@ type Gamestate struct {
 	// KnownCards contains a Stack for each player, with a Stack of their knowledge of opponents' cards.
 	// Index first by player about whom you want to know, then by the index of the player who might know something.
 	// A card of 'None' means no knowledge.
-	KnownCards []Stack
+	KnownCards Stacks
 
 	// ActivePlayer is the id of the active player.
 	ActivePlayer int

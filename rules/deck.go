@@ -166,3 +166,5 @@ func (sc Deck) AsInt() int {
 							sc[Countess]*2+
 							sc[Princess])))))
 }
+
+type Stacks []Stack
