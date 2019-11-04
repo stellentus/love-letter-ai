@@ -14,6 +14,7 @@ import (
 	"love-letter-ai/montecarlo"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
+	"love-letter-ai/state"
 	"love-letter-ai/td"
 )
 
@@ -76,18 +77,18 @@ func main() {
 
 	score := []int{0, 0} // Number of wins for each player
 
-	state, err := rules.NewGame(NUMBER_OF_PLAYERS)
+	game, err := rules.NewGame(NUMBER_OF_PLAYERS)
 	if err != nil {
 		panic(err)
 	}
-	state.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
+	game.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
 
 	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("../../res/static"))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "POST":
-			if state.ActivePlayer != 0 {
+			if game.ActivePlayer != 0 {
 				// This is an error
 				panic("Active player is not the human!")
 			}
@@ -107,27 +108,27 @@ func main() {
 			}
 			act.SelectedCard = rules.CardFromString(r.FormValue("guess"))
 			fmt.Println("Parsing action:", act)
-			state.PlayCard(act)
+			game.PlayCard(act)
 
 			// Did the player's move end the game?
-			if state.GameEnded {
-				score[state.Winner]++
-				state.Reset()
+			if game.GameEnded {
+				score[game.Winner]++
+				game.Reset()
 				break
 			}
 
 			// The player didn't end the game, so the computer gets a turn...
-			action := comPlay.PlayCard(players.NewSimpleState(state))
-			state.PlayCard(action)
+			action := comPlay.PlayCard(state.NewSimple(game))
+			game.PlayCard(action)
 
-			if state.GameEnded {
-				score[state.Winner]++
-				state.Reset()
+			if game.GameEnded {
+				score[game.Winner]++
+				game.Reset()
 			}
 
 			// Now reload the content...
 		}
-		err := template.Must(template.ParseFiles("../../res/templates/index.template.html")).Execute(w, stateForTemplate(state, score))
+		err := template.Must(template.ParseFiles("../../res/templates/index.template.html")).Execute(w, stateForTemplate(game, score))
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -135,24 +136,24 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-func stateForTemplate(state rules.Gamestate, score []int) LoveLetterState {
-	fmt.Println(state)
+func stateForTemplate(game rules.Gamestate, score []int) LoveLetterState {
+	fmt.Println(game)
 
 	data := LoveLetterState{
-		RevealedCards: state.Faceup.Strings(),
+		RevealedCards: game.Faceup.Strings(),
 		Score: Score{
 			You:      score[0],
 			Computer: score[1],
 		},
 		PlayedCards: PlayedCards{
-			You:      state.Discards[0].Strings(),
-			Computer: state.Discards[1].Strings(),
+			You:      game.Discards[0].Strings(),
+			Computer: game.Discards[1].Strings(),
 		},
-		LastPlay:    state.LastPlay[1].String(),
-		Card1:       state.CardInHand[0].String(),
-		Card2:       state.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
-		EventLog:    template.HTML(strings.Join(state.EventLog.Events, "<br>")),
-		GameStateID: players.NewSimpleState(state).AsInt(),
+		LastPlay:    game.LastPlay[1].String(),
+		Card1:       game.CardInHand[0].String(),
+		Card2:       game.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
+		EventLog:    template.HTML(strings.Join(game.EventLog.Events, "<br>")),
+		GameStateID: state.NewSimple(game).AsInt(),
 	}
 	return data
 }

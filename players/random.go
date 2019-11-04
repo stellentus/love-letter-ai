@@ -4,6 +4,7 @@ import (
 	"math/rand"
 
 	"love-letter-ai/rules"
+	"love-letter-ai/state"
 )
 
 // This AI will play random, but with the constraint that it won't break a rule or do something that will obviously eliminate it (i.e. discard the Princess).
@@ -11,7 +12,7 @@ import (
 
 type RandomPlayer struct{}
 
-func (rp *RandomPlayer) PlayCard(state SimpleState) rules.Action {
+func (rp *RandomPlayer) PlayCard(state state.Simple) rules.Action {
 	action := rules.Action{
 		PlayRecent:   rand.Int31n(1) == 0,
 		SelectedCard: rules.Card(rand.Int31n(int32(rules.Princess))),
