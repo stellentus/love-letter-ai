@@ -32,6 +32,9 @@ var deckIntTests = []struct {
 }{
 	{"Empty", 0, Deck{}},
 	{"One guard", 1, Deck{Guard: 1}},
+	{"One King", 1944, Deck{King: 1}},
+	{"One Countess", 972, Deck{Countess: 1}},
+	{"One Princess", 486, Deck{Princess: 1}},
 	{"Three guards", 3, Deck{Guard: 3}},
 	{"Two guards and a priest walk into a bar...", 8, Deck{Guard: 2, Priest: 1}},
 	{"Full", DeckSpaceMagnitude - 1, DefaultDeck()},
