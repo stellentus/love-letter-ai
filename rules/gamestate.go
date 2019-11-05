@@ -503,7 +503,11 @@ func (state *Gamestate) triggerGameEnd() {
 }
 
 func (el *EventLog) logPlayer(player int, event string) {
-	el.log(el.PlayerNames[player] + " " + event)
+	name := ""
+	if len(el.PlayerNames) > player {
+		name = el.PlayerNames[player]
+	}
+	el.log(name + " " + event)
 }
 
 func (el *EventLog) log(event string) {
