@@ -103,13 +103,19 @@ func NewGame(playerCount int) (Gamestate, error) {
 	}
 	state.ActivePlayerCard = state.Deck.Draw()
 
-	state.EventLog.log(fmt.Sprintf("New game with %d players", playerCount))
-	state.EventLog.PlayerNames = make([]string, playerCount)
-	for i := 0; i < playerCount; i++ {
-		state.EventLog.PlayerNames[i] = fmt.Sprintf("Player %d", i)
-	}
+	state.EventLog = newEventLog(playerCount)
 
 	return state, nil
+}
+
+func newEventLog(playerCount int) EventLog {
+	var el EventLog
+	el.log(fmt.Sprintf("New game with %d players", playerCount))
+	el.PlayerNames = make([]string, playerCount)
+	for i := 0; i < playerCount; i++ {
+		el.PlayerNames[i] = fmt.Sprintf("Player %d", i)
+	}
+	return el
 }
 
 func (game *Gamestate) Reset() error {
