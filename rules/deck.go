@@ -162,9 +162,9 @@ func (sc Deck) AsInt() int {
 			3*(sc[Baron]+
 				3*(sc[Handmaid]+
 					3*(sc[Prince]+
-						3*(sc[King]*4+
-							sc[Countess]*2+
-							sc[Princess])))))
+						3*(sc[Princess]+
+							2*(sc[Countess]+
+								2*sc[King]))))))
 }
 
 type Stacks []Stack
