@@ -53,3 +53,11 @@ func TestFromInt(t *testing.T) {
 		assert.EqualValues(t, test.deck, deck, "From int: "+test.descr)
 	}
 }
+
+func TestFromIntWithExtraBits(t *testing.T) {
+	for _, test := range deckIntTests {
+		deck := Deck{}
+		deck.FromInt(1<<13 + test.asInt)
+		assert.EqualValues(t, test.deck, deck, "From int: "+test.descr)
+	}
+}

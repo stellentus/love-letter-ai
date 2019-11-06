@@ -168,6 +168,7 @@ func (sc Deck) AsInt() int {
 }
 
 func (sc *Deck) FromInt(i int) {
+	i = i & ((1 << 12) - 1) // Mask anything outside of 12 bits
 	i, sc[Guard] = divRem(i, 6)
 	i, sc[Priest] = divRem(i, 3)
 	i, sc[Baron] = divRem(i, 3)
