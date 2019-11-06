@@ -12,11 +12,23 @@
 
     <script src="static/loveletter.js"></script>
     <script>
-      {{ if eq .GameStateID 0 }}
-        const GameStateIDvalue = localStorage.getItem('GameStateID');
+      const setCookie = (name, value, days = 7, path = '/') => {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString()
+        document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=' + path
+      }
+
+      const getCookie = (name) => {
+        return document.cookie.split('; ').reduce((r, v) => {
+          const parts = v.split('=')
+          return parts[0] === name ? decodeURIComponent(parts[1]) : r
+        }, '')
+      }
+
+      {{ if eq .GameStateID "" }}
+        const GameStateIDvalue = getCookie('GameStateID');
       {{ else }}
         const GameStateIDvalue = {{.GameStateID}};
-        localStorage.setItem('GameStateID', GameStateIDvalue);
+        setCookie('GameStateID', GameStateIDvalue, 365);
       {{ end }}
 
       // Set the ID in a hidden form input

@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -36,7 +37,7 @@ type LoveLetterState struct {
 	Card1       string
 	Card2       string
 	EventLog    template.HTML
-	GameStateID int
+	GameStateID string
 }
 
 const NUMBER_OF_PLAYERS = 2
@@ -77,15 +78,11 @@ func main() {
 
 	score := []int{0, 0} // Number of wins for each player
 
-	game, err := rules.NewGame(NUMBER_OF_PLAYERS)
-	if err != nil {
-		panic(err)
-	}
-	game.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
-
 	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("../../res/static"))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		game := gameFromToken(cookieID(r))
+
 		switch r.Method {
 		case "POST":
 			if game.ActivePlayer != 0 {
@@ -107,7 +104,6 @@ func main() {
 				act.TargetPlayerOffset = 1
 			}
 			act.SelectedCard = rules.CardFromString(r.FormValue("guess"))
-			fmt.Println("Parsing action:", act)
 			game.PlayCard(act)
 
 			// Did the player's move end the game?
@@ -136,9 +132,39 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-func stateForTemplate(game rules.Gamestate, score []int) LoveLetterState {
-	fmt.Println(game)
+func cookieID(r *http.Request) string {
+	cookie, err := r.Cookie("GameStateID")
+	if err != nil {
+		return ""
+	}
+	data, err := url.QueryUnescape(cookie.Value)
+	if err != nil {
+		return ""
+	}
+	return data
+}
 
+func gameFromToken(tok string) rules.Gamestate {
+	var game rules.Gamestate
+	err := errors.New("")
+
+	if tok != "" {
+		// Try loading if there's a token
+		err = game.FromToken(tok)
+	}
+
+	if err != nil {
+		game, err = rules.NewGame(NUMBER_OF_PLAYERS)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	game.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
+	return game
+}
+
+func stateForTemplate(game rules.Gamestate, score []int) LoveLetterState {
 	data := LoveLetterState{
 		RevealedCards: game.Faceup.Strings(),
 		Score: Score{
@@ -153,7 +179,7 @@ func stateForTemplate(game rules.Gamestate, score []int) LoveLetterState {
 		Card1:       game.CardInHand[0].String(),
 		Card2:       game.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
 		EventLog:    template.HTML(strings.Join(game.EventLog.Events, "<br>")),
-		GameStateID: state.NewSimple(game).AsIndex(),
+		GameStateID: game.Token(),
 	}
 	return data
 }
