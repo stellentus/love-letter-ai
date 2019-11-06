@@ -2,6 +2,7 @@ package rules
 
 import (
 	"math/rand"
+	"strconv"
 	"strings"
 )
 
@@ -20,6 +21,30 @@ func (st Stack) Strings() []string {
 		strs[i] = c.String()
 	}
 	return strs
+}
+
+func (st Stack) Token() string {
+	str := "["
+	for _, c := range st {
+		str += strconv.Itoa(int(c))
+	}
+	str += "]"
+	return str
+}
+
+func (st *Stack) FromToken(str string) {
+	length := len(str)
+	if length <= 2 || str[0] != '[' || str[length-1] != ']' {
+		*st = Stack{}
+		return // We don't do errors 'round here
+	}
+	str = str[1 : length-1]
+	length -= 2
+	cards := []Card{}
+	for _, c := range str {
+		cards = append(cards, Card(unsafeAtoi(string(c))))
+	}
+	*st = cards
 }
 
 // For now, the Card value is its face value.
@@ -181,3 +206,28 @@ func (sc *Deck) FromInt(i int) {
 func divRem(num int, den int) (int, int) { return num / den, num % den }
 
 type Stacks []Stack
+
+func (sts Stacks) Token() string {
+	strs := []string{}
+	for _, c := range sts {
+		strs = append(strs, c.Token())
+	}
+	return "[" + strings.Join(strs, "-") + "]"
+}
+
+func (sts *Stacks) FromToken(str string) {
+	length := len(str)
+	if length <= 2 || str[0] != '[' || str[length-1] != ']' {
+		return // We don't do errors 'round here
+	}
+
+	strs := strings.Split(str[1:length-1], "-")
+
+	stacks := []Stack{}
+	for _, c := range strs {
+		stk := Stack{}
+		stk.FromToken(c)
+		stacks = append(stacks, stk)
+	}
+	*sts = stacks
+}
