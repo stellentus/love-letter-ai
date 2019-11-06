@@ -12,6 +12,21 @@ func TestNewGame(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+const newGameToken = "2.2302.[443].[[]-[]].[00].[[00]-[00]].0.00.[78].1"
+
+func TestGameToToken(t *testing.T) {
+	rand.Seed(0)
+	game, _ := NewGame(2)
+	assert.Equal(t, newGameToken, game.Token())
+}
+
+func TestGameFromToken(t *testing.T) {
+	game := &Gamestate{}
+	game.FromToken(newGameToken)
+	// Now we test if it converts back again, since we don't have equality for a game
+	assert.Equal(t, newGameToken, game.Token())
+}
+
 func TestPlayingPrincessIdiot(t *testing.T) {
 	rand.Seed(0)
 	state := newGame(Deck{
