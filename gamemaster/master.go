@@ -3,6 +3,7 @@ package gamemaster
 import (
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
+	"love-letter-ai/state"
 )
 
 type Gamemaster struct {
@@ -29,7 +30,7 @@ func New(players []players.Player) (Gamemaster, error) {
 }
 
 func (master *Gamemaster) TakeTurn() {
-	action := master.Players[master.ActivePlayer].PlayCard(players.NewSimpleState(master.Gamestate))
+	action := master.Players[master.ActivePlayer].PlayCard(state.NewSimple(master.Gamestate))
 	master.PlayCard(action)
 }
 

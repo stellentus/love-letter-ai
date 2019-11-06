@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"love-letter-ai/montecarlo"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
+	"love-letter-ai/state"
 	"love-letter-ai/td"
 )
 
@@ -31,10 +33,11 @@ type LoveLetterState struct {
 	RevealedCards []string
 	Score
 	PlayedCards
-	LastPlay string
-	Card1    string
-	Card2    string
-	EventLog template.HTML
+	LastPlay    string
+	Card1       string
+	Card2       string
+	EventLog    template.HTML
+	GameStateID string
 }
 
 const NUMBER_OF_PLAYERS = 2
@@ -44,7 +47,7 @@ var (
 	qFile     = flag.String("q", "", "Path to a Q learning file")
 )
 
-func exitIfError(err error, reason string ) {
+func exitIfError(err error, reason string) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "exiting: %s\n%s\n", reason, err)
 		os.Exit(1)
@@ -75,18 +78,14 @@ func main() {
 
 	score := []int{0, 0} // Number of wins for each player
 
-	state, err := rules.NewGame(NUMBER_OF_PLAYERS)
-	if err != nil {
-		panic(err)
-	}
-	state.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
-
 	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("../../res/static"))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		game := gameFromToken(cookieID(r))
+
 		switch r.Method {
 		case "POST":
-			if state.ActivePlayer != 0 {
+			if game.ActivePlayer != 0 {
 				// This is an error
 				panic("Active player is not the human!")
 			}
@@ -105,28 +104,27 @@ func main() {
 				act.TargetPlayerOffset = 1
 			}
 			act.SelectedCard = rules.CardFromString(r.FormValue("guess"))
-			fmt.Println("Parsing action:", act)
-			state.PlayCard(act)
+			game.PlayCard(act)
 
 			// Did the player's move end the game?
-			if state.GameEnded {
-				score[state.Winner]++
-				state.Reset()
+			if game.GameEnded {
+				score[game.Winner]++
+				game.Reset()
 				break
 			}
 
 			// The player didn't end the game, so the computer gets a turn...
-			action := comPlay.PlayCard(players.NewSimpleState(state))
-			state.PlayCard(action)
+			action := comPlay.PlayCard(state.NewSimple(game))
+			game.PlayCard(action)
 
-			if state.GameEnded {
-				score[state.Winner]++
-				state.Reset()
+			if game.GameEnded {
+				score[game.Winner]++
+				game.Reset()
 			}
 
 			// Now reload the content...
 		}
-		err := template.Must(template.ParseFiles("../../res/templates/index.template.html")).Execute(w, stateForTemplate(state, score))
+		err := template.Must(template.ParseFiles("../../res/templates/index.template.html")).Execute(w, stateForTemplate(game, score))
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -134,23 +132,54 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-func stateForTemplate(state rules.Gamestate, score []int) LoveLetterState {
-	fmt.Println(state)
+func cookieID(r *http.Request) string {
+	cookie, err := r.Cookie("GameStateID")
+	if err != nil {
+		return ""
+	}
+	data, err := url.QueryUnescape(cookie.Value)
+	if err != nil {
+		return ""
+	}
+	return data
+}
 
+func gameFromToken(tok string) rules.Gamestate {
+	var game rules.Gamestate
+	err := errors.New("")
+
+	if tok != "" {
+		// Try loading if there's a token
+		err = game.FromToken(tok)
+	}
+
+	if err != nil {
+		game, err = rules.NewGame(NUMBER_OF_PLAYERS)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	game.EventLog = rules.EventLog{PlayerNames: []string{"Human", "Computer"}}
+	return game
+}
+
+func stateForTemplate(game rules.Gamestate, score []int) LoveLetterState {
 	data := LoveLetterState{
-		RevealedCards: state.Faceup.Strings(),
+		RevealedCards: game.Faceup.Strings(),
 		Score: Score{
 			You:      score[0],
 			Computer: score[1],
 		},
 		PlayedCards: PlayedCards{
-			You:      state.Discards[0].Strings(),
-			Computer: state.Discards[1].Strings(),
+			You:      game.Discards[0].Strings(),
+			Computer: game.Discards[1].Strings(),
 		},
-		LastPlay: state.LastPlay[1].String(),
-		Card1:    state.CardInHand[0].String(),
-		Card2:    state.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
-		EventLog: template.HTML(strings.Join(state.EventLog.Events, "<br>")),
+		LastPlay:    game.LastPlay[1].String(),
+		Card1:       game.CardInHand[0].String(),
+		Card2:       game.ActivePlayerCard.String(), // TODO this assumes that the current player is the active player
+		EventLog:    template.HTML(strings.Join(game.EventLog.Events, "<br>")),
+		GameStateID: game.Token(),
 	}
 	return data
 }

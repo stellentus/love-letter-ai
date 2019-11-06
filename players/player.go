@@ -1,7 +1,10 @@
 package players
 
-import "love-letter-ai/rules"
+import (
+	"love-letter-ai/rules"
+	"love-letter-ai/state"
+)
 
 type Player interface {
-	PlayCard(SimpleState) rules.Action
+	PlayCard(state.Simple) rules.Action
 }

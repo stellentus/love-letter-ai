@@ -11,6 +11,31 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
 
     <script src="static/loveletter.js"></script>
+    <script>
+      const setCookie = (name, value, days = 7, path = '/') => {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString()
+        document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=' + path
+      }
+
+      const getCookie = (name) => {
+        return document.cookie.split('; ').reduce((r, v) => {
+          const parts = v.split('=')
+          return parts[0] === name ? decodeURIComponent(parts[1]) : r
+        }, '')
+      }
+
+      {{ if eq .GameStateID "" }}
+        const GameStateIDvalue = getCookie('GameStateID');
+      {{ else }}
+        const GameStateIDvalue = {{.GameStateID}};
+        setCookie('GameStateID', GameStateIDvalue, 365);
+      {{ end }}
+
+      // Set the ID in a hidden form input
+      window.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('GameStateID').value = GameStateIDvalue;
+      }, false);
+    </script>
   </head>
 
   <body class="bg-light">
@@ -62,6 +87,7 @@
         <input type=hidden id=cards name=cards value="">
         <input type=hidden id=targets name=targets value="">
         <input type=hidden id=guess name=guess value="">
+        <input type=hidden id=GameStateID name=GameStateID value="">
 
         <label>Choose a card to discard</label>
         <div class="btn-group" data-toggle="buttons">

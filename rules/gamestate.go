@@ -18,7 +18,7 @@ type Gamestate struct {
 
 	// Discards contains a Stack for each player, showing their face-up cards.
 	// Note the top card here might not be the most recently played card if a Prince was played against this player.
-	Discards []Stack
+	Discards Stacks
 
 	// LastPlay contains the last card played by each player. This will often be the last card in the player's discard stack, but not always.
 	LastPlay Stack
@@ -26,7 +26,7 @@ type Gamestate struct {
 	// KnownCards contains a Stack for each player, with a Stack of their knowledge of opponents' cards.
 	// Index first by player about whom you want to know, then by the index of the player who might know something.
 	// A card of 'None' means no knowledge.
-	KnownCards []Stack
+	KnownCards Stacks
 
 	// ActivePlayer is the id of the active player.
 	ActivePlayer int
@@ -103,13 +103,19 @@ func NewGame(playerCount int) (Gamestate, error) {
 	}
 	state.ActivePlayerCard = state.Deck.Draw()
 
-	state.EventLog.log(fmt.Sprintf("New game with %d players", playerCount))
-	state.EventLog.PlayerNames = make([]string, playerCount)
-	for i := 0; i < playerCount; i++ {
-		state.EventLog.PlayerNames[i] = fmt.Sprintf("Player %d", i)
-	}
+	state.EventLog = newEventLog(playerCount)
 
 	return state, nil
+}
+
+func newEventLog(playerCount int) EventLog {
+	var el EventLog
+	el.log(fmt.Sprintf("New game with %d players", playerCount))
+	el.PlayerNames = make([]string, playerCount)
+	for i := 0; i < playerCount; i++ {
+		el.PlayerNames[i] = fmt.Sprintf("Player %d", i)
+	}
+	return el
 }
 
 func (game *Gamestate) Reset() error {
@@ -503,7 +509,11 @@ func (state *Gamestate) triggerGameEnd() {
 }
 
 func (el *EventLog) logPlayer(player int, event string) {
-	el.log(el.PlayerNames[player] + " " + event)
+	name := ""
+	if len(el.PlayerNames) > player {
+		name = el.PlayerNames[player]
+	}
+	el.log(name + " " + event)
 }
 
 func (el *EventLog) log(event string) {

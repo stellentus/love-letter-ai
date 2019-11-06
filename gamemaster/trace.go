@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
+	"love-letter-ai/state"
 )
 
 type StateInfo struct {
@@ -28,13 +29,13 @@ func TraceOneGame(pl players.Player) (Trace, error) {
 	tr := Trace{StateInfos: make([]StateInfo, 0, 15)}
 
 	for !sg.GameEnded {
-		s := players.NewSimpleState(sg)
+		s := state.NewSimple(sg)
 		if s.OpponentCard == 0 {
 			s.OpponentCard++
 		}
 
 		action := pl.PlayCard(s)
-		sa, ss := s.AsIntWithAction(action)
+		sa, ss := s.AsIndexWithAction(action)
 		if ss < 0 || sa < 0 {
 			return Trace{}, fmt.Errorf("Negative state was calculated: %d %d", ss, sa)
 		}

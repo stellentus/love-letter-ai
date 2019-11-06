@@ -54,8 +54,8 @@ func (qp *QPlayer) TrainWithSelfPolicy(episodes int) {
 // If it hasn't learned anything for this state, it plays randomly.
 // It will also choose a random action with probability epsilon. This isn't exactly
 // epsilon-greedy because it doesn't subtract the probability of the greedy action.
-func (qp *QPlayer) PlayCard(state players.SimpleState) rules.Action {
-	act := qp.policy(state.AsInt())
+func (qp *QPlayer) PlayCard(state state.Simple) rules.Action {
+	act := qp.policy(state.AsIndex())
 	if act == nil || rand.Float32() < qp.epsilon {
 		return (&players.RandomPlayer{}).PlayCard(state)
 	}
