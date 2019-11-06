@@ -167,4 +167,16 @@ func (sc Deck) AsInt() int {
 								2*sc[King]))))))
 }
 
+func (sc *Deck) FromInt(i int) {
+	i, sc[Guard] = divRem(i, 6)
+	i, sc[Priest] = divRem(i, 3)
+	i, sc[Baron] = divRem(i, 3)
+	i, sc[Handmaid] = divRem(i, 3)
+	i, sc[Prince] = divRem(i, 3)
+	i, sc[Princess] = divRem(i, 2)
+	i, sc[Countess] = divRem(i, 2)
+	sc[King] = int(i)
+}
+func divRem(num int, den int) (int, int) { return num / den, num % den }
+
 type Stacks []Stack

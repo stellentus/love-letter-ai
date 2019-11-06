@@ -45,3 +45,11 @@ func TestAsInt(t *testing.T) {
 		assert.EqualValues(t, test.asInt, test.deck.AsInt(), "To int: "+test.descr)
 	}
 }
+
+func TestFromInt(t *testing.T) {
+	for _, test := range deckIntTests {
+		deck := Deck{}
+		deck.FromInt(test.asInt)
+		assert.EqualValues(t, test.deck, deck, "From int: "+test.descr)
+	}
+}
