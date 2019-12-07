@@ -27,7 +27,7 @@ var nTest = flag.Int("n", 10000, "Number of games played in each test against ra
 func main() {
 	flag.Parse()
 
-	sar := td.NewSarsa(float32(*epsilon), float32(*alpha), float32(*gamma))
+	sar := td.NewTD(float32(*epsilon), float32(*alpha), float32(*gamma))
 	var err error
 
 	if *loadPath != "" {
@@ -35,7 +35,7 @@ func main() {
 		if err != nil {
 			// Okay, no file, print a warning and keep going
 			fmt.Println("WARNING: Could not find the file you wanted to load, so proceeding with newly initialized SARSA")
-			sar = td.NewSarsa(float32(*epsilon), float32(*alpha), float32(*gamma))
+			sar = td.NewTD(float32(*epsilon), float32(*alpha), float32(*gamma))
 		} else {
 			fmt.Println("The weights were loaded from '" + *loadPath + "'")
 		}
@@ -50,7 +50,7 @@ func main() {
 
 	for j := 0; j < *nEpochs; j++ {
 		fmt.Printf("Running vs self %d...\n", j+1)
-		sar.Train(*nGames)
+		td.TrainSarsa(sar, *nGames)
 
 		fightRandom(*nTest, sar)
 
@@ -75,7 +75,7 @@ func main() {
 	}
 }
 
-func printTraces(n int, sar *td.Sarsa) {
+func printTraces(n int, sar *td.TD) {
 	fists := make([]rules.FinalState, 0, n)
 	for i := 0; i < n; i++ {
 		tr, err := gamemaster.TraceOneGame(&players.RandomPlayer{})
