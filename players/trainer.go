@@ -2,11 +2,12 @@ package players
 
 import (
 	"fmt"
-	"love-letter-ai/rules"
-	"love-letter-ai/state"
 	"math/rand"
 	"os"
 	"sync"
+
+	"love-letter-ai/rules"
+	"love-letter-ai/state"
 )
 
 type TrainingPlayer interface {
@@ -59,6 +60,7 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 	for i := 0; i < Runners; i++ {
 		wg.Add(1)
 		go func() {
+			r := rand.New(rand.NewSource(int64(i)))
 			for games := range in {
 				templateSG, err := rules.NewGame(2)
 				if err != nil {
@@ -71,7 +73,7 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 					trs[1].lastQ = unsetState
 
 					for !sg.GameEnded {
-						action, err := trs[sg.ActivePlayer].learningAction(sg, epsilon)
+						action, err := trs[sg.ActivePlayer].learningAction(sg, epsilon, r)
 						if err != nil {
 							panic(err.Error())
 						}
@@ -146,11 +148,11 @@ func status(episodes, epPrintMod int, ch chan int) {
 // If it hasn't learned anything for this state, it plays randomly.
 // It will also choose a random action with probability Epsilon. This isn't exactly
 // Epsilon-greedy because it doesn't subtract the probability of the greedy action.
-func epsilonGreedyAction(pl TrainingPlayer, st state.Simple, epsilon float64) (rules.Action, int) {
+func epsilonGreedyAction(pl TrainingPlayer, st state.Simple, epsilon float64, r *rand.Rand) (rules.Action, int) {
 	sNoAct := st.AsIndex()
 	act, sa := pl.GreedyAction(sNoAct)
-	if act == nil || rand.Float64() < epsilon {
-		action := (&RandomPlayer{}).PlayCard(st)
+	if act == nil || r.Float64() < epsilon {
+		action := (&RandomPlayer{}).PlayCardRand(st, r)
 		return action, state.IndexWithAction(sNoAct, action)
 	}
 	return *act, sa
@@ -158,8 +160,8 @@ func epsilonGreedyAction(pl TrainingPlayer, st state.Simple, epsilon float64) (r
 
 // learningAction provides a suggested action for the provided state.
 // However, it also assumes it's being called for each play in a game so it can update the policy.
-func (tr *trainer) learningAction(game rules.Gamestate, epsilon float64) (rules.Action, error) {
-	action, sa := epsilonGreedyAction(tr.tp, state.NewSimple(game), epsilon)
+func (tr *trainer) learningAction(game rules.Gamestate, epsilon float64, r *rand.Rand) (rules.Action, error) {
+	action, sa := epsilonGreedyAction(tr.tp, state.NewSimple(game), epsilon, r)
 	tr.updateQ(game.GameEnded, sa, noReward)
 	return action, nil
 }

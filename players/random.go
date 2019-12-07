@@ -14,10 +14,25 @@ type RandomPlayer struct{}
 
 func (rp *RandomPlayer) PlayCard(state state.Simple) rules.Action {
 	action := rules.Action{
-		PlayRecent:   rand.Int31n(1) == 0,
-		SelectedCard: rules.Card(rand.Int31n(int32(rules.Princess))),
+		PlayRecent:         rand.Int31n(1) == 0,
+		SelectedCard:       rules.Card(rand.Int31n(int32(rules.Princess))),
+		TargetPlayerOffset: int(rand.Int31n(1) + 1), // This assumes two players
 	}
 
+	return playAction(state, action)
+}
+
+func (rp *RandomPlayer) PlayCardRand(state state.Simple, r *rand.Rand) rules.Action {
+	action := rules.Action{
+		PlayRecent:         r.Int31n(1) == 0,
+		SelectedCard:       rules.Card(r.Int31n(int32(rules.Princess))),
+		TargetPlayerOffset: int(r.Int31n(1) + 1), // This assumes two players
+	}
+
+	return playAction(state, action)
+}
+
+func playAction(state state.Simple, action rules.Action) rules.Action {
 	playedCard := state.RecentDraw
 	otherCard := state.OldCard
 	if !action.PlayRecent {
@@ -47,8 +62,7 @@ func (rp *RandomPlayer) PlayCard(state state.Simple) rules.Action {
 			// Nope, must play Countess
 			action.PlayRecent = !action.PlayRecent
 		} else {
-			// Okay, safe to choose random offset
-			action.TargetPlayerOffset = int(rand.Int31n(1) + 1) // This assumes two players
+			// Okay, leave random offset
 		}
 	case rules.King:
 		if otherCard == rules.Countess {

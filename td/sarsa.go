@@ -64,12 +64,15 @@ func (lrn doubleQLearner) Finalize() {
 	}
 }
 
-func (lrn doubleQLearner) randTD() int {
-	return rand.Int() % 2
-}
+func (lrn doubleQLearner) randTD() int                 { return rand.Int() % 2 }
+func (lrn doubleQLearner) randTDRand(r *rand.Rand) int { return r.Int() % 2 }
 
 func (lrn doubleQLearner) PlayCard(st state.Simple) rules.Action {
 	return lrn.td[lrn.randTD()].PlayCard(st)
+}
+
+func (lrn doubleQLearner) PlayCardRand(st state.Simple, r *rand.Rand) rules.Action {
+	return lrn.td[lrn.randTDRand(r)].PlayCard(st)
 }
 
 func (lrn doubleQLearner) GreedyAction(state int) (*rules.Action, int) {

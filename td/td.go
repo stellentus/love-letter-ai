@@ -7,6 +7,7 @@ import (
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
+	"math/rand"
 	"os"
 )
 
@@ -38,6 +39,16 @@ func (sar TD) PlayCard(state state.Simple) rules.Action {
 	act, _ := sar.GreedyAction(state.AsIndex())
 	if act == nil {
 		return (&players.RandomPlayer{}).PlayCard(state)
+	}
+	return *act
+}
+
+// PlayCard provides a suggested action for the provided state.
+// If it hasn't learned anything for this state, it plays randomly.
+func (sar TD) PlayCardRand(state state.Simple, r *rand.Rand) rules.Action {
+	act, _ := sar.GreedyAction(state.AsIndex())
+	if act == nil {
+		return (&players.RandomPlayer{}).PlayCardRand(state, r)
 	}
 	return *act
 }
