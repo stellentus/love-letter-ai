@@ -46,6 +46,10 @@ func resourcePath(path string) string {
 	return filepath.Join(config.Resources, path)
 }
 
+type GameData struct {
+	Game, Score, Opponents interface{}
+}
+
 func main() {
 	flag.Parse()
 	if *sarsaFile != "" && *qFile != "" {
@@ -54,18 +58,20 @@ func main() {
 
 	exitIfError(envconfig.Process("LLAI", &config), "failed to parse environment")
 
-	var comPlay players.Player
-	switch {
-	case *sarsaFile != "":
+	bots := map[string]players.Player{
+		"random": &players.RandomPlayer{},
+	}
+
+	if *sarsaFile != "" {
 		sarsa := td.NewSarsa(0, 0, 0)
 		exitIfError(sarsa.LoadFromFile(*sarsaFile), "loading sarsa file")
-		comPlay = sarsa.NewPlayer()
-	case *qFile != "":
+		bots["sarsa"] = sarsa.NewPlayer()
+	}
+
+	if *qFile != "" {
 		q := montecarlo.NewQPlayer(0)
 		exitIfError(q.LoadFromFile(*qFile), "loading Q file")
-		comPlay = q
-	default:
-		comPlay = &players.RandomPlayer{}
+		bots["q"] = q
 	}
 
 	rand.Seed(time.Now().UnixNano())
@@ -76,6 +82,8 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		game := gameFromToken(cookieID(r))
+
+		botName := "random"
 
 		switch r.Method {
 		case "POST":
@@ -107,6 +115,14 @@ func main() {
 				break
 			}
 
+			botName = strings.ToLower(r.FormValue("opponent"))
+			comPlay, ok := bots[botName]
+			if !ok {
+				log.Printf("Invalid botname (%s), defaulting to random", botName)
+				botName = "random"
+				comPlay = bots[botName]
+			}
+
 			// The player didn't end the game, so the computer gets a turn...
 			action := comPlay.PlayCard(state.NewSimple(game))
 			game.PlayCard(action)
@@ -118,7 +134,20 @@ func main() {
 
 			// Now reload the content...
 		}
-		err := template.Must(template.ParseFiles(resourcePath("templates/index.template.html"))).Execute(w, stateForTemplate(game, score))
+
+		gd := GameData{
+			Game: stateForTemplate(game),
+			Score: struct {
+				You      int
+				Computer int
+			}{
+				You:      score[0],
+				Computer: score[1],
+			},
+			Opponents: Opponents(botName, bots),
+		}
+
+		err := template.Must(template.ParseFiles(resourcePath("templates/index.template.html"))).Execute(w, gd)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -127,6 +156,20 @@ func main() {
 	log.Println("Running server at", config.Address)
 
 	http.ListenAndServe(config.Address, nil)
+}
+
+func Opponents(current string, bots map[string]players.Player) interface{} {
+	list := []string{}
+	for o := range bots {
+		list = append(list, strings.ToTitle(o))
+	}
+	return struct {
+		Current string
+		Bots    []string
+	}{
+		strings.ToTitle(current),
+		list,
+	}
 }
 
 func cookieID(r *http.Request) string {
@@ -161,12 +204,7 @@ func gameFromToken(tok string) rules.Gamestate {
 	return game
 }
 
-func stateForTemplate(game rules.Gamestate, score []int) interface{} {
-	type Score struct {
-		You      int
-		Computer int
-	}
-
+func stateForTemplate(game rules.Gamestate) interface{} {
 	type PlayedCards struct {
 		You      []string
 		Computer []string
@@ -174,7 +212,6 @@ func stateForTemplate(game rules.Gamestate, score []int) interface{} {
 
 	type LoveLetterState struct {
 		RevealedCards []string
-		Score
 		PlayedCards
 		LastPlay    string
 		Card1       string
@@ -185,10 +222,6 @@ func stateForTemplate(game rules.Gamestate, score []int) interface{} {
 
 	data := LoveLetterState{
 		RevealedCards: game.Faceup.Strings(),
-		Score: Score{
-			You:      score[0],
-			Computer: score[1],
-		},
 		PlayedCards: PlayedCards{
 			You:      game.Discards[0].Strings(),
 			Computer: game.Discards[1].Strings(),

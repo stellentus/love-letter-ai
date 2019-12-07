@@ -24,11 +24,11 @@
         }, '')
       }
 
-      {{ if eq .GameStateID "" }}
-        const GameStateIDvalue = getCookie('GameStateID');
-      {{ else }}
-        const GameStateIDvalue = {{.GameStateID}};
+      {{ with .Game.GameStateID }}
+        const GameStateIDvalue = {{.}};
         setCookie('GameStateID', GameStateIDvalue, 365);
+      {{ else }}
+        const GameStateIDvalue = getCookie('GameStateID');
       {{ end }}
 
       // Set the ID in a hidden form input
@@ -48,13 +48,23 @@
     </div>
     <div class="container">
 
-      <h2>Current Score {{.Score.You}}-{{.Score.Computer}}</h2>
+      <h2>
+        Current Score {{.Score.You}}-{{.Score.Computer}} vs.
+        {{with .Opponents}}
+          {{$current := .Current}}
+        <select id="inputState" class="form-control">
+          {{range .Bots}}
+            <option{{if eq $current .}} selected{{end}}>{{.}}</option>
+          {{end}}
+        </select>
+        {{end}}
+    </h2>
 
       <div class="row">
         <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
           <div class="card-header font-weight-bold">Revealed cards</div>
           <div class="card-body">
-            {{range .RevealedCards}}<div>{{.}}</div>{{end}}
+            {{range .Game.RevealedCards}}<div>{{.}}</div>{{end}}
           </div>
         </div></div>
 
@@ -62,21 +72,21 @@
         <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
           <div class="card-header font-weight-bold">Last Turn</div>
           <div class="card-body">
-            {{with .LastPlay}}{{.}}{{end}}
+            {{with .Game.LastPlay}}{{.}}{{end}}
           </div>
         </div></div>
 
         <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
           <div class="card-header font-weight-bold">You</div>
           <div class="card-body">
-            {{range .PlayedCards.You}}<div>{{.}}</div>{{end}}
+            {{range .Game.PlayedCards.You}}<div>{{.}}</div>{{end}}
           </div>
         </div></div>
 
         <div class="col-md-3 col-sm-6 d-flex align-items-stretch"><div class="card">
           <div class="card-header font-weight-bold">Computer</div>
           <div class="card-body">
-            {{range .PlayedCards.Computer}}<div>{{.}}</div>{{end}}
+            {{range .Game.PlayedCards.Computer}}<div>{{.}}</div>{{end}}
           </div>
         </div></div>
       </div>
@@ -91,8 +101,8 @@
 
         <label>Choose a card to discard</label>
         <div class="btn-group" data-toggle="buttons">
-          <button class="btn btn-primary" type="button" onclick='playcard("card1","{{.Card1}}")'>{{.Card1}}</button>
-          <button class="btn btn-primary" type="button" onclick='playcard("card2","{{.Card2}}")'>{{.Card2}}</button>
+          <button class="btn btn-primary" type="button" onclick='playcard("card1","{{.Game.Card1}}")'>{{.Game.Card1}}</button>
+          <button class="btn btn-primary" type="button" onclick='playcard("card2","{{.Game.Card2}}")'>{{.Game.Card2}}</button>
         </div>
 
         <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" id="princemodal" aria-labelledby="princemodal" aria-hidden="true">
@@ -125,7 +135,7 @@
         </div>
       </form>
 
-      <div>{{.EventLog}}</div>
+      <div>{{.Game.EventLog}}</div>
 
     </div>
   </body>
