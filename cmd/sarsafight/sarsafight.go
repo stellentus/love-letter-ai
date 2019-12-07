@@ -48,9 +48,14 @@ func main() {
 		fmt.Println("The final weights will be saved at '" + *savePath + "'")
 	}
 
+	pls := []players.TrainingPlayer{
+		sar.SarsaLearner(),
+		sar.SarsaLearner(),
+	}
+
 	for j := 0; j < *nEpochs; j++ {
 		fmt.Printf("Running vs self %d...\n", j+1)
-		td.TrainSarsa(sar, *nGames)
+		players.Train(pls, *nGames, float32(*epsilon))
 
 		fightRandom(*nTest, sar)
 
