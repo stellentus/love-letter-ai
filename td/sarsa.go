@@ -9,6 +9,8 @@ func (td TD) SarsaLearner() players.TrainingPlayer {
 
 type sarsaLearner struct{ TD }
 
+func (lrn sarsaLearner) Finalize() {}
+
 func (sl sarsaLearner) UpdateQ(gameEnded bool, lastQ, sa int, reward float32) {
 	thisValue := float32(0) // If game ended, the value of the new state is 0 because it's a terminal state
 	if !gameEnded {
@@ -22,6 +24,8 @@ func (td TD) QLearner() players.TrainingPlayer {
 }
 
 type qLearner struct{ TD }
+
+func (lrn qLearner) Finalize() {}
 
 func (lrn qLearner) UpdateQ(gameEnded bool, lastQ, sa int, reward float32) {
 	// The expected value is the greedy policy.

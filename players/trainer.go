@@ -17,6 +17,9 @@ type TrainingPlayer interface {
 
 	// UpdateQ is called to update the player's state-action values.
 	UpdateQ(gameEnded bool, lastQ, sa int, reward float32)
+
+	// Finalize is called at the end in case any cleanup is necessary.
+	Finalize()
 }
 
 type trainer struct {
@@ -92,6 +95,8 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 		}
 	}
 	fmt.Fprintln(os.Stderr, "\r100.0% complete")
+	trs[0].tp.Finalize()
+	trs[1].tp.Finalize()
 }
 
 // epsilonGreedyAction provides a suggested action for the provided state.
