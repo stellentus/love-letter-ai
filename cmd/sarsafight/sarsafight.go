@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"love-letter-ai/gamemaster"
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
 	"love-letter-ai/td"
-	"os"
-	"path/filepath"
 )
 
 var loadPath = flag.String("load", "", "Path to the file to load weights")

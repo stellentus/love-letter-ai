@@ -1,22 +1,21 @@
 package rules
 
 import (
-	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewGame(t *testing.T) {
-	_, err := NewGame(2)
+	_, err := NewGame(2, r)
 	assert.NoError(t, err)
 }
 
 const newGameToken = "2.2302.[443].[[]-[]].[00].[[00]-[00]].0.00.[78].1"
 
 func TestGameToToken(t *testing.T) {
-	rand.Seed(0)
-	game, _ := NewGame(2)
+	r.Seed(0)
+	game, _ := NewGame(2, r)
 	assert.Equal(t, newGameToken, game.Token())
 }
 
@@ -28,7 +27,7 @@ func TestGameFromToken(t *testing.T) {
 }
 
 func TestPlayingPrincessIdiot(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
 		Priest: 2,
@@ -44,14 +43,14 @@ func TestPlayingPrincessIdiot(t *testing.T) {
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
-	})
+	}, r)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 1, state.Winner)
 }
 
 func TestPlayingPrince(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
 		Priest: 2,
@@ -67,7 +66,7 @@ func TestPlayingPrince(t *testing.T) {
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
-	})
+	}, r)
 
 	assert.Equal(t, 1, state.ActivePlayer)         // It's the next player's turn
 	assert.Equal(t, Guard, state.CardInHand[1])    // The other player had to discard and ended up drawing a Guard (based on the seed)
@@ -77,7 +76,7 @@ func TestPlayingPrince(t *testing.T) {
 }
 
 func TestPlayingGuardBadGuess(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
 		Priest: 2,
@@ -93,7 +92,7 @@ func TestPlayingGuardBadGuess(t *testing.T) {
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       Handmaid, // incorrect guess
-	})
+	}, r)
 
 	assert.Equal(t, 1, state.ActivePlayer)         // It's the next player's turn
 	assert.Equal(t, Countess, state.CardInHand[1]) // The other player did not discard the Countess
@@ -103,7 +102,7 @@ func TestPlayingGuardBadGuess(t *testing.T) {
 }
 
 func TestPlayingGuardGoodGuess(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
 		Priest: 2,
@@ -119,14 +118,14 @@ func TestPlayingGuardGoodGuess(t *testing.T) {
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       Countess, // correct guess
-	})
+	}, r)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 0, state.Winner)
 }
 
 func TestPlayingPrinceOnPrincess(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
 		Priest: 2,
@@ -142,14 +141,14 @@ func TestPlayingPrinceOnPrincess(t *testing.T) {
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
-	})
+	}, r)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 0, state.Winner)
 }
 
 func TestPlayingPrinceWithCountess(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
 		Priest: 2,
@@ -165,7 +164,7 @@ func TestPlayingPrinceWithCountess(t *testing.T) {
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
-	})
+	}, r)
 
 	// ...so we lose
 	assert.True(t, state.GameEnded)
@@ -173,7 +172,7 @@ func TestPlayingPrinceWithCountess(t *testing.T) {
 }
 
 func TestPlayingCountessCorrectly(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
 		Priest: 2,
@@ -189,7 +188,7 @@ func TestPlayingCountessCorrectly(t *testing.T) {
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
-	})
+	}, r)
 
 	// .. and the game goes on
 	assert.False(t, state.GameEnded)
@@ -201,7 +200,7 @@ func TestPlayingCountessCorrectly(t *testing.T) {
 }
 
 func TestPlayingBaronWithCountessVsGuard(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
 		Priest: 2,
@@ -216,14 +215,14 @@ func TestPlayingBaronWithCountessVsGuard(t *testing.T) {
 		PlayRecent:         false,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
-	})
+	}, r)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 0, state.Winner)
 }
 
 func TestPlayingBaronWithPriestVsKing(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Guard:  4,
 		Priest: 1,
@@ -238,14 +237,14 @@ func TestPlayingBaronWithPriestVsKing(t *testing.T) {
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       None,
-	})
+	}, r)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 1, state.Winner)
 }
 
 func TestAlmostEmptyDeck(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Priest: 1,
 		Prince: 1,
@@ -260,7 +259,7 @@ func TestAlmostEmptyDeck(t *testing.T) {
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       Handmaid,
-	})
+	}, r)
 
 	assert.False(t, state.GameEnded)
 	assert.Equal(t, 0, state.ActivePlayer)          // It's the next player's turn
@@ -270,7 +269,7 @@ func TestAlmostEmptyDeck(t *testing.T) {
 }
 
 func TestLastPlay(t *testing.T) {
-	rand.Seed(0)
+	r.Seed(0)
 	state := newGame(Deck{
 		Prince: 1,
 	}, 2)
@@ -284,7 +283,7 @@ func TestLastPlay(t *testing.T) {
 		PlayRecent:         true,
 		TargetPlayerOffset: 1,
 		SelectedCard:       Handmaid,
-	})
+	}, r)
 
 	assert.True(t, state.GameEnded)
 	assert.Equal(t, 1, state.Winner)

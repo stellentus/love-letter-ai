@@ -3,6 +3,7 @@ package rules
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 )
 
 type Gamestate struct {
@@ -86,22 +87,22 @@ type FinalState struct {
 
 // NewGame deals out a new game for the specified number of players.
 // This always assumes that player 0 is the starting player.
-func NewGame(playerCount int) (Gamestate, error) {
+func NewGame(playerCount int, r *rand.Rand) (Gamestate, error) {
 	state := newGame(DefaultDeck(), playerCount)
 
 	if playerCount == 2 {
 		// Draw 3 cards face up
 		for i := 0; i < 3; i++ {
-			state.Faceup = append(state.Faceup, state.Deck.Draw())
+			state.Faceup = append(state.Faceup, state.Deck.Draw(r))
 		}
 	} else if playerCount != 3 && playerCount != 4 {
 		return Gamestate{}, errors.New("Only games with 2, 3, or 4 players are supported")
 	}
 
 	for i := range state.CardInHand {
-		state.CardInHand[i] = state.Deck.Draw()
+		state.CardInHand[i] = state.Deck.Draw(r)
 	}
-	state.ActivePlayerCard = state.Deck.Draw()
+	state.ActivePlayerCard = state.Deck.Draw(r)
 
 	state.EventLog = newEventLog(playerCount)
 
@@ -118,10 +119,10 @@ func newEventLog(playerCount int) EventLog {
 	return el
 }
 
-func (game *Gamestate) Reset() error {
+func (game *Gamestate) Reset(r *rand.Rand) error {
 	oldEL := game.EventLog
 	var err error
-	*game, err = NewGame(game.NumPlayers)
+	*game, err = NewGame(game.NumPlayers, r)
 	if err != nil {
 		return err
 	}
@@ -187,15 +188,15 @@ func (eventlog EventLog) Copy() EventLog {
 //	* 2 for player 0's hand
 //	* 1 for player 1's hand
 //	* 1 for player 1's last play
-func NewSimpleGame(deck Deck) Gamestate {
+func NewSimpleGame(deck Deck, r *rand.Rand) Gamestate {
 	state := newGame(deck, 2)
 
-	state.LastPlay[1] = state.Deck.Draw()
+	state.LastPlay[1] = state.Deck.Draw(r)
 
 	for i := range state.CardInHand {
-		state.CardInHand[i] = state.Deck.Draw()
+		state.CardInHand[i] = state.Deck.Draw(r)
 	}
-	state.ActivePlayerCard = state.Deck.Draw()
+	state.ActivePlayerCard = state.Deck.Draw(r)
 
 	return state
 }
@@ -277,7 +278,7 @@ func (state *Gamestate) clearKnownCard(player int, card Card) {
 }
 
 // PlayCard takes the provided action. Of course only the active player should call this at any time.
-func (state *Gamestate) PlayCard(action Action) {
+func (state *Gamestate) PlayCard(action Action, r *rand.Rand) {
 	if state.GameEnded {
 		return
 	}
@@ -391,7 +392,7 @@ func (state *Gamestate) PlayCard(action Action) {
 			state.eliminatePlayer(targetPlayer)
 		} else {
 			state.Discards[targetPlayer] = append(state.Discards[targetPlayer], targetCard)
-			state.CardInHand[targetPlayer] = state.Deck.Draw()
+			state.CardInHand[targetPlayer] = state.Deck.Draw(r)
 		}
 		state.clearKnownCard(targetPlayer, targetCard)
 		if targetCard == Princess && targetPlayer == state.ActivePlayer {
@@ -446,7 +447,7 @@ func (state *Gamestate) PlayCard(action Action) {
 	}
 
 	if state.Deck.Size() > 1 {
-		state.ActivePlayerCard = state.Deck.Draw()
+		state.ActivePlayerCard = state.Deck.Draw(r)
 		state.incrementPlayerTurn()
 	} else {
 		state.triggerGameEnd()

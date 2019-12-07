@@ -1,27 +1,33 @@
 package rules
 
 import (
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	r = rand.New(rand.NewSource(time.Now().UnixNano()))
+)
+
 func TestDrawingCard(t *testing.T) {
 	deck := Deck{Guard: 1}
-	card := deck.Draw()
+	card := deck.Draw(r)
 	assert.EqualValues(t, card, Guard)
 }
 
 func TestDrawingEmpty(t *testing.T) {
 	deck := Deck{}
-	card := deck.Draw()
+	card := deck.Draw(r)
 	assert.EqualValues(t, card, None)
 }
 
 func TestDrawingCardUntilEmpty(t *testing.T) {
 	deck := Deck{Guard: 1}
-	card := deck.Draw()
-	card = deck.Draw()
+	card := deck.Draw(r)
+	card = deck.Draw(r)
 	assert.EqualValues(t, card, None)
 }
 

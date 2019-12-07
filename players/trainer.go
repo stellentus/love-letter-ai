@@ -62,7 +62,7 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 		go func() {
 			r := rand.New(rand.NewSource(int64(i)))
 			for games := range in {
-				templateSG, err := rules.NewGame(2)
+				templateSG, err := rules.NewGame(2, r)
 				if err != nil {
 					panic(err.Error())
 				}
@@ -78,7 +78,7 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 							panic(err.Error())
 						}
 
-						sg.PlayCard(action)
+						sg.PlayCard(action, r)
 					}
 
 					// Now allow both players to update based on the end of the game.

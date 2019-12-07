@@ -87,6 +87,7 @@ func main() {
 
 		switch r.Method {
 		case "POST":
+			rand := rand.New(rand.NewSource(time.Now().UnixNano()))
 			if game.ActivePlayer != 0 {
 				// This is an error
 				panic("Active player is not the human!")
@@ -106,12 +107,12 @@ func main() {
 				act.TargetPlayerOffset = 1
 			}
 			act.SelectedCard = rules.CardFromString(r.FormValue("guess"))
-			game.PlayCard(act)
+			game.PlayCard(act, rand)
 
 			// Did the player's move end the game?
 			if game.GameEnded {
 				score[game.Winner]++
-				game.Reset()
+				game.Reset(rand)
 				break
 			}
 
@@ -125,11 +126,11 @@ func main() {
 
 			// The player didn't end the game, so the computer gets a turn...
 			action := comPlay.PlayCard(state.NewSimple(game))
-			game.PlayCard(action)
+			game.PlayCard(action, rand)
 
 			if game.GameEnded {
 				score[game.Winner]++
-				game.Reset()
+				game.Reset(rand)
 			}
 
 			// Now reload the content...
@@ -194,7 +195,7 @@ func gameFromToken(tok string) rules.Gamestate {
 	}
 
 	if err != nil {
-		game, err = rules.NewGame(NUMBER_OF_PLAYERS)
+		game, err = rules.NewGame(NUMBER_OF_PLAYERS, rand.New(rand.NewSource(time.Now().UnixNano())))
 		if err != nil {
 			panic(err)
 		}

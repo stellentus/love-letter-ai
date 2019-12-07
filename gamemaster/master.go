@@ -1,6 +1,9 @@
 package gamemaster
 
 import (
+	"math/rand"
+	"time"
+
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
@@ -18,20 +21,24 @@ type Gamemaster struct {
 
 	// startPlayerOffset is the id of the player who started the current game
 	startPlayerOffset int
+
+	rand *rand.Rand
 }
 
 func New(players []players.Player) (Gamemaster, error) {
-	state, err := rules.NewGame(len(players))
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	state, err := rules.NewGame(len(players), r)
 	return Gamemaster{
 		Players:   players,
 		Gamestate: state,
 		Wins:      make([]int, state.NumPlayers),
+		rand:      r,
 	}, err
 }
 
 func (master *Gamemaster) TakeTurn() {
 	action := master.Players[master.ActivePlayer].PlayCard(state.NewSimple(master.Gamestate))
-	master.PlayCard(action)
+	master.PlayCard(action, master.rand)
 }
 
 func (master *Gamemaster) PlayGame() {
@@ -54,7 +61,7 @@ func (master *Gamemaster) PlaySeries(gamesToWin int) (int, error) {
 		winner := (master.Winner - master.startPlayerOffset + master.NumPlayers) % master.NumPlayers
 		master.startPlayerOffset = winner
 		var err error
-		master.Gamestate, err = rules.NewGame(master.NumPlayers)
+		master.Gamestate, err = rules.NewGame(master.NumPlayers, master.rand)
 		if err != nil {
 			return 0, err
 		}
@@ -66,7 +73,7 @@ func (master *Gamemaster) PlayStatistics(totalGames int) (int, error) {
 	for i := 0; i < totalGames; i++ {
 		master.PlayGame()
 		var err error
-		master.Gamestate, err = rules.NewGame(master.NumPlayers)
+		master.Gamestate, err = rules.NewGame(master.NumPlayers, master.rand)
 		if err != nil {
 			return 0, err
 		}
