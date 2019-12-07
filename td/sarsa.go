@@ -70,8 +70,13 @@ func (sarsa *Sarsa) Train(episodes int) {
 		panic(err.Error())
 	}
 
+	epPrintMod := episodes / 100000
+	if epPrintMod < 1 {
+		epPrintMod = 1
+	}
+
 	for i := 0; i < episodes; i++ {
-		if (i % (episodes / 10000)) == 0 {
+		if (i % epPrintMod) == 0 {
 			fmt.Fprintf(os.Stderr, "\r%2.2f%% complete", float32(i)/float32(episodes)*100)
 		}
 		if (i % 100) == 0 {
