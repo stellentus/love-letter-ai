@@ -48,13 +48,11 @@ func main() {
 		fmt.Println("The final weights will be saved at '" + *savePath + "'")
 	}
 
-	pl := sar.NewPlayer()
-
 	for j := 0; j < *nEpochs; j++ {
 		fmt.Printf("Running vs self %d...\n", j+1)
 		sar.Train(*nGames)
 
-		fightRandom(*nTest, pl)
+		fightRandom(*nTest, sar)
 
 		*alpha *= *alphaDecay
 		sar.Alpha = float32(*alpha)
@@ -66,8 +64,8 @@ func main() {
 	}
 
 	fmt.Printf("\n\nPlaying greedily...\n")
-	printTraces(*nTraces, pl, sar)
-	fightRandom(*nTest, pl)
+	printTraces(*nTraces, sar)
+	fightRandom(*nTest, sar)
 
 	if *savePath != "" {
 		err := sar.SaveToFile(*savePath)
@@ -77,7 +75,7 @@ func main() {
 	}
 }
 
-func printTraces(n int, pl players.Player, sar *td.Sarsa) {
+func printTraces(n int, sar *td.Sarsa) {
 	fists := make([]rules.FinalState, 0, n)
 	for i := 0; i < n; i++ {
 		tr, err := gamemaster.TraceOneGame(&players.RandomPlayer{})

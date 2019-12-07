@@ -48,13 +48,6 @@ func NewSarsa(epsilon, alpha, gamma float32) *Sarsa {
 	return sar
 }
 
-func (sarsa *Sarsa) NewPlayer() players.Player {
-	return &sarsaLearner{
-		sarsa: sarsa,
-		lastQ: unsetState,
-	}
-}
-
 func (sarsa Sarsa) Value(actState int) float32 {
 	return sarsa.qf[actState]
 }
@@ -119,8 +112,8 @@ func (sarsa *Sarsa) Train(episodes int) {
 
 // PlayCard provides a suggested action for the provided state.
 // If it hasn't learned anything for this state, it plays randomly.
-func (sl *sarsaLearner) PlayCard(state state.Simple) rules.Action {
-	act, _ := sl.sarsa.greedyAction(state.AsIndex())
+func (sar Sarsa) PlayCard(state state.Simple) rules.Action {
+	act, _ := sar.greedyAction(state.AsIndex())
 	if act == nil {
 		return (&players.RandomPlayer{}).PlayCard(state)
 	}
