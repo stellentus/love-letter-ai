@@ -5,10 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -17,34 +19,20 @@ import (
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
 	"love-letter-ai/td"
+
+	"github.com/kelseyhightower/envconfig"
 )
-
-type Score struct {
-	You      int
-	Computer int
-}
-
-type PlayedCards struct {
-	You      []string
-	Computer []string
-}
-
-type LoveLetterState struct {
-	RevealedCards []string
-	Score
-	PlayedCards
-	LastPlay    string
-	Card1       string
-	Card2       string
-	EventLog    template.HTML
-	GameStateID string
-}
 
 const NUMBER_OF_PLAYERS = 2
 
 var (
 	sarsaFile = flag.String("sarsa", "", "Path to a sarsa file")
 	qFile     = flag.String("q", "", "Path to a Q learning file")
+
+	config = struct {
+		Resources string `default:"../../res"`
+		Address   string `default:":8080"`
+	}{}
 )
 
 func exitIfError(err error, reason string) {
@@ -54,11 +42,17 @@ func exitIfError(err error, reason string) {
 	}
 }
 
+func resourcePath(path string) string {
+	return filepath.Join(config.Resources, path)
+}
+
 func main() {
 	flag.Parse()
 	if *sarsaFile != "" && *qFile != "" {
 		exitIfError(errors.New("Can only specify one of -sarsa or -q"), "invalid arguments")
 	}
+
+	exitIfError(envconfig.Process("LLAI", &config), "failed to parse environment")
 
 	var comPlay players.Player
 	switch {
@@ -78,7 +72,7 @@ func main() {
 
 	score := []int{0, 0} // Number of wins for each player
 
-	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("../../res/static"))))
+	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir(resourcePath("static")))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		game := gameFromToken(cookieID(r))
@@ -124,12 +118,15 @@ func main() {
 
 			// Now reload the content...
 		}
-		err := template.Must(template.ParseFiles("../../res/templates/index.template.html")).Execute(w, stateForTemplate(game, score))
+		err := template.Must(template.ParseFiles(resourcePath("templates/index.template.html"))).Execute(w, stateForTemplate(game, score))
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
 	})
-	http.ListenAndServe(":8080", nil)
+
+	log.Println("Running server at", config.Address)
+
+	http.ListenAndServe(config.Address, nil)
 }
 
 func cookieID(r *http.Request) string {
@@ -164,7 +161,28 @@ func gameFromToken(tok string) rules.Gamestate {
 	return game
 }
 
-func stateForTemplate(game rules.Gamestate, score []int) LoveLetterState {
+func stateForTemplate(game rules.Gamestate, score []int) interface{} {
+	type Score struct {
+		You      int
+		Computer int
+	}
+
+	type PlayedCards struct {
+		You      []string
+		Computer []string
+	}
+
+	type LoveLetterState struct {
+		RevealedCards []string
+		Score
+		PlayedCards
+		LastPlay    string
+		Card1       string
+		Card2       string
+		EventLog    template.HTML
+		GameStateID string
+	}
+
 	data := LoveLetterState{
 		RevealedCards: game.Faceup.Strings(),
 		Score: Score{
