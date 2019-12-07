@@ -36,7 +36,7 @@ const (
 	lossReward       = -0.1 // The penalty for losing is minor since it might not have been the player's fault
 )
 
-func Train(pls []TrainingPlayer, episodes int, epsilon float32) {
+func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 	templateSG, err := rules.NewGame(2)
 	if err != nil {
 		panic(err.Error())
@@ -98,10 +98,10 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float32) {
 // If it hasn't learned anything for this state, it plays randomly.
 // It will also choose a random action with probability Epsilon. This isn't exactly
 // Epsilon-greedy because it doesn't subtract the probability of the greedy action.
-func epsilonGreedyAction(pl TrainingPlayer, st state.Simple, epsilon float32) (rules.Action, int) {
+func epsilonGreedyAction(pl TrainingPlayer, st state.Simple, epsilon float64) (rules.Action, int) {
 	sNoAct := st.AsIndex()
 	act, sa := pl.GreedyAction(sNoAct)
-	if act == nil || rand.Float32() < epsilon {
+	if act == nil || rand.Float64() < epsilon {
 		action := (&RandomPlayer{}).PlayCard(st)
 		return action, state.IndexWithAction(sNoAct, action)
 	}
@@ -110,7 +110,7 @@ func epsilonGreedyAction(pl TrainingPlayer, st state.Simple, epsilon float32) (r
 
 // learningAction provides a suggested action for the provided state.
 // However, it also assumes it's being called for each play in a game so it can update the policy.
-func (tr *trainer) learningAction(game rules.Gamestate, epsilon float32) (rules.Action, error) {
+func (tr *trainer) learningAction(game rules.Gamestate, epsilon float64) (rules.Action, error) {
 	action, sa := epsilonGreedyAction(tr.tp, state.NewSimple(game), epsilon)
 	tr.updateQ(game.GameEnded, sa, noReward)
 	return action, nil

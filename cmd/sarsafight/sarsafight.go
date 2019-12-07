@@ -27,7 +27,7 @@ var nTest = flag.Int("n", 10000, "Number of games played in each test against ra
 func main() {
 	flag.Parse()
 
-	sar := td.NewTD(float32(*epsilon), float32(*alpha), float32(*gamma))
+	sar := td.NewTD(float32(*alpha), float32(*gamma))
 	var err error
 
 	if *loadPath != "" {
@@ -35,7 +35,7 @@ func main() {
 		if err != nil {
 			// Okay, no file, print a warning and keep going
 			fmt.Println("WARNING: Could not find the file you wanted to load, so proceeding with newly initialized SARSA")
-			sar = td.NewTD(float32(*epsilon), float32(*alpha), float32(*gamma))
+			sar = td.NewTD(float32(*alpha), float32(*gamma))
 		} else {
 			fmt.Println("The weights were loaded from '" + *loadPath + "'")
 		}
@@ -55,7 +55,7 @@ func main() {
 
 	for j := 0; j < *nEpochs; j++ {
 		fmt.Printf("Running vs self %d...\n", j+1)
-		players.Train(pls, *nGames, float32(*epsilon))
+		players.Train(pls, *nGames, *epsilon)
 
 		fightRandom(*nTest, sar)
 
@@ -64,7 +64,6 @@ func main() {
 
 		if (j % *epsilonDecayPeriod) == 0 {
 			*epsilon *= *epsilonDecay
-			sar.Epsilon = float32(*epsilon)
 		}
 	}
 

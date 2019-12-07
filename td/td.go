@@ -11,18 +11,16 @@ import (
 )
 
 type TD struct {
-	qf      []float32
-	Epsilon float32
-	Alpha   float32
-	Gamma   float32
+	qf    []float32
+	Alpha float32
+	Gamma float32
 }
 
-func NewTD(epsilon, alpha, gamma float32) *TD {
+func NewTD(alpha, gamma float32) *TD {
 	sar := &TD{
-		qf:      make([]float32, state.ActionSpaceMagnitude, state.ActionSpaceMagnitude),
-		Epsilon: epsilon,
-		Alpha:   alpha,
-		Gamma:   gamma,
+		qf:    make([]float32, state.ActionSpaceMagnitude, state.ActionSpaceMagnitude),
+		Alpha: alpha,
+		Gamma: gamma,
 	}
 	for i := range sar.qf {
 		sar.qf[i] = 0.5
@@ -70,7 +68,6 @@ func (sarsa TD) GreedyAction(st int) (*rules.Action, int) {
 
 type fileHeader struct {
 	Version              uint32
-	Epsilon              float32
 	Alpha                float32
 	Gamma                float32
 	ActionSpaceMagnitude uint64
@@ -87,8 +84,7 @@ func (sarsa TD) SaveToFile(path string) error {
 	writer := bufio.NewWriter(file)
 
 	err = binary.Write(writer, binary.BigEndian, fileHeader{
-		Version:              1,
-		Epsilon:              sarsa.Epsilon,
+		Version:              2,
 		Alpha:                sarsa.Alpha,
 		Gamma:                sarsa.Gamma,
 		ActionSpaceMagnitude: uint64(length),
@@ -130,7 +126,6 @@ func (sarsa *TD) LoadFromFile(path string) error {
 	if int(header.ActionSpaceMagnitude) != length {
 		return fmt.Errorf("Cannot load SARSA weights from file size not %d (%d)", state.ActionSpaceMagnitude, header.ActionSpaceMagnitude)
 	}
-	sarsa.Epsilon = header.Epsilon
 	sarsa.Alpha = header.Alpha
 	sarsa.Gamma = header.Gamma
 
