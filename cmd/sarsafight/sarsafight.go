@@ -49,8 +49,8 @@ func main() {
 	}
 
 	pls := []players.TrainingPlayer{
-		sar.ExpectedSarsaLearner(),
-		sar.ExpectedSarsaLearner(),
+		sar.QLearner(),
+		sar.QLearner(),
 	}
 
 	for j := 0; j < *nEpochs; j++ {

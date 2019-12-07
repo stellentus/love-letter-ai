@@ -17,13 +17,13 @@ func (sl sarsaLearner) UpdateQ(gameEnded bool, lastQ, sa int, reward float32) {
 	sl.qf[lastQ] += sl.Alpha * (reward + thisValue - sl.qf[lastQ])
 }
 
-func (td TD) ExpectedSarsaLearner() players.TrainingPlayer {
-	return expectedSarsaLearner{TD: td}
+func (td TD) QLearner() players.TrainingPlayer {
+	return qLearner{TD: td}
 }
 
-type expectedSarsaLearner struct{ TD }
+type qLearner struct{ TD }
 
-func (lrn expectedSarsaLearner) UpdateQ(gameEnded bool, lastQ, sa int, reward float32) {
+func (lrn qLearner) UpdateQ(gameEnded bool, lastQ, sa int, reward float32) {
 	// The expected value is the greedy policy.
 	thisValue := float32(0) // If game ended, the value of the new state is 0 because it's a terminal state
 	if !gameEnded {
