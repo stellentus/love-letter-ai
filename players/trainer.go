@@ -6,6 +6,7 @@ import (
 	"love-letter-ai/state"
 	"math/rand"
 	"os"
+	"sync"
 )
 
 type TrainingPlayer interface {
@@ -37,17 +38,61 @@ const (
 	forfeitWinReward = 1 // Only a minor benefit for winning because the other player was an idiot
 	noReward         = 0
 	lossReward       = -0.1 // The penalty for losing is minor since it might not have been the player's fault
+	runners          = 32
+	chunkSize        = 100
 )
 
 func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
-	templateSG, err := rules.NewGame(2)
-	if err != nil {
-		panic(err.Error())
-	}
-
 	trs := make([]trainer, len(pls))
 	for i, pl := range pls {
 		trs[i] = trainer{tp: pl}
+	}
+
+	wg := sync.WaitGroup{}
+	in := make(chan int)
+	out := make(chan int)
+
+	for i := 0; i < runners; i++ {
+		wg.Add(1)
+		go func() {
+			for games := range in {
+				templateSG, err := rules.NewGame(2)
+				if err != nil {
+					panic(err.Error())
+				}
+				for i := 0; i < games; i++ {
+					sg := templateSG.Copy()
+
+					trs[0].lastQ = unsetState
+					trs[1].lastQ = unsetState
+
+					for !sg.GameEnded {
+						action, err := trs[sg.ActivePlayer].learningAction(sg, epsilon)
+						if err != nil {
+							panic(err.Error())
+						}
+
+						sg.PlayCard(action)
+					}
+
+					// Now allow both players to update based on the end of the game.
+					sa, _ := state.NewSimple(sg).AsIndexWithAction(rules.Action{})
+					if sa < 0 {
+						panic(fmt.Sprintf("Negative state was calculated: %d", sa))
+					}
+					if sg.LossWasStupid {
+						// This only happens if the play is something that will ALWAYS lose the game, so incur a huge penalty
+						trs[(sg.Winner+1)%2].updateQ(sg.GameEnded, sa, stupidReward)
+						trs[sg.Winner].updateQ(sg.GameEnded, sa, forfeitWinReward)
+					} else {
+						trs[(sg.Winner+1)%2].updateQ(sg.GameEnded, sa, lossReward)
+						trs[sg.Winner].updateQ(sg.GameEnded, sa, winReward)
+					}
+				}
+				out <- games
+			}
+			wg.Done()
+		}()
 	}
 
 	epPrintMod := episodes / 100000
@@ -55,48 +100,39 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 		epPrintMod = 1
 	}
 
-	for i := 0; i < episodes; i++ {
-		if (i % epPrintMod) == 0 {
-			fmt.Fprintf(os.Stderr, "\r%2.2f%% complete", float32(i)/float32(episodes)*100)
-		}
-		if (i % 100) == 0 {
-			// Every so often, start from a new starting state
-			templateSG, err = rules.NewGame(2)
-			if err != nil {
-				panic(err.Error())
-			}
-		}
-		sg := templateSG.Copy()
+	go func() { status(episodes, epPrintMod, out); wg.Done() }()
 
-		trs[0].lastQ = unsetState
-		trs[1].lastQ = unsetState
-
-		for !sg.GameEnded {
-			action, err := trs[sg.ActivePlayer].learningAction(sg, epsilon)
-			if err != nil {
-				panic(err.Error())
-			}
-
-			sg.PlayCard(action)
-		}
-
-		// Now allow both players to update based on the end of the game.
-		sa, _ := state.NewSimple(sg).AsIndexWithAction(rules.Action{})
-		if sa < 0 {
-			panic(fmt.Sprintf("Negative state was calculated: %d", sa))
-		}
-		if sg.LossWasStupid {
-			// This only happens if the play is something that will ALWAYS lose the game, so incur a huge penalty
-			trs[(sg.Winner+1)%2].updateQ(sg.GameEnded, sa, stupidReward)
-			trs[sg.Winner].updateQ(sg.GameEnded, sa, forfeitWinReward)
+	for episodes > 0 {
+		if episodes > chunkSize {
+			in <- chunkSize
 		} else {
-			trs[(sg.Winner+1)%2].updateQ(sg.GameEnded, sa, lossReward)
-			trs[sg.Winner].updateQ(sg.GameEnded, sa, winReward)
+			in <- episodes
 		}
+		episodes -= chunkSize
 	}
-	fmt.Fprintln(os.Stderr, "\r100.0% complete")
+	close(in)
+
+	wg.Wait()
+	wg.Add(1)
+	close(out)
+	wg.Wait()
+
 	trs[0].tp.Finalize()
 	trs[1].tp.Finalize()
+	fmt.Fprintln(os.Stderr, "\r100.0% complete")
+}
+
+func status(episodes, epPrintMod int, ch chan int) {
+	count := 0
+	current := 0
+	for i := range ch {
+		count += i
+		current += i
+		if current >= epPrintMod {
+			fmt.Fprintf(os.Stderr, "\r%2.2f%% complete", float32(count)/float32(episodes)*100)
+			current -= epPrintMod
+		}
+	}
 }
 
 // epsilonGreedyAction provides a suggested action for the provided state.
