@@ -2,10 +2,13 @@ package td
 
 import (
 	"fmt"
+	"love-letter-ai/players"
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
 	"os"
 )
+
+type UpdateQFunc func(gameEnded bool, sa int, reward float32)
 
 type sarsaLearner struct {
 	// td is the backing data
@@ -13,6 +16,9 @@ type sarsaLearner struct {
 
 	// lastQ was the last state-action value.
 	lastQ int
+
+	// updateQFunc is the function that updates TD's qf
+	UpdateQFunc
 }
 
 const (
@@ -26,8 +32,8 @@ const (
 
 func TrainSarsa(td *TD, episodes int) {
 	pls := []*sarsaLearner{
-		&sarsaLearner{td: td},
-		&sarsaLearner{td: td},
+		&sarsaLearner{td: td, UpdateQFunc: nil},
+		&sarsaLearner{td: td, UpdateQFunc: nil},
 	}
 
 	templateSG, err := rules.NewGame(2)
@@ -85,7 +91,7 @@ func TrainSarsa(td *TD, episodes int) {
 // learningAction provides a suggested action for the provided state.
 // However, it also assumes it's being called for each play in a game so it can update the policy.
 func (sl *sarsaLearner) learningAction(game rules.Gamestate) (rules.Action, error) {
-	action, sa := sl.td.epsilonGreedyAction(state.NewSimple(game))
+	action, sa := players.EpsilonGreedyAction(sl.td, state.NewSimple(game), sl.td.Epsilon)
 	sl.updateQ(game.GameEnded, sa, noReward)
 	return action, nil
 }

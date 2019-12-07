@@ -7,7 +7,6 @@ import (
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
-	"math/rand"
 	"os"
 )
 
@@ -38,30 +37,16 @@ func (sarsa TD) Value(actState int) float32 {
 // PlayCard provides a suggested action for the provided state.
 // If it hasn't learned anything for this state, it plays randomly.
 func (sar TD) PlayCard(state state.Simple) rules.Action {
-	act, _ := sar.greedyAction(state.AsIndex())
+	act, _ := sar.GreedyAction(state.AsIndex())
 	if act == nil {
 		return (&players.RandomPlayer{}).PlayCard(state)
 	}
 	return *act
 }
 
-// epsilonGreedyAction provides a suggested action for the provided state.
-// If it hasn't learned anything for this state, it plays randomly.
-// It will also choose a random action with probability Epsilon. This isn't exactly
-// Epsilon-greedy because it doesn't subtract the probability of the greedy action.
-func (sarsa TD) epsilonGreedyAction(st state.Simple) (rules.Action, int) {
-	sNoAct := st.AsIndex()
-	act, sa := sarsa.greedyAction(sNoAct)
-	if act == nil || rand.Float32() < sarsa.Epsilon {
-		action := (&players.RandomPlayer{}).PlayCard(st)
-		return action, state.IndexWithAction(sNoAct, action)
-	}
-	return *act, sa
-}
-
 // greedyAction returns the greedy action for the given state. (Note the argument should be a state, not an action-state.)
 // Ties are broken by choosing the first option (i.e. arbitrarily in a deterministic way).
-func (sarsa TD) greedyAction(st int) (*rules.Action, int) {
+func (sarsa TD) GreedyAction(st int) (*rules.Action, int) {
 	bestActs := []int{}
 	bestActValue := float32(0)
 	bestActState := 0
