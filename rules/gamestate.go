@@ -231,7 +231,7 @@ func (state *Gamestate) AllDiscards() Deck {
 }
 
 func (state *Gamestate) eliminatePlayer(player int) {
-	state.EventLog.logPlayer(player, "was eliminated!")
+	// state.EventLog.logPlayer(player, "was eliminated!")
 	state.EliminatedPlayers[player] = true
 
 	pInGame := 0
@@ -299,7 +299,7 @@ func (state *Gamestate) PlayCard(action Action, r *rand.Rand) {
 	if state.CardInHand[state.ActivePlayer] == Countess {
 		if state.ActivePlayerCard == King || state.ActivePlayerCard == Prince {
 			// Automatically eliminated for cheating. This is not the same as the rules, which simply forbid this.
-			state.logPlayer(state.ActivePlayer, "cheated by failing to discard a Countess while holding a King/Prince")
+			// state.logPlayer(state.ActivePlayer, "cheated by failing to discard a Countess while holding a King/Prince")
 			state.eliminatePlayer(state.ActivePlayer)
 			state.LossWasStupid = true
 			return
@@ -310,18 +310,18 @@ func (state *Gamestate) PlayCard(action Action, r *rand.Rand) {
 	case Guard:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a Guard
-			state.logPlayer(state.ActivePlayer, "played a Guard against an invalid player")
+			// state.logPlayer(state.ActivePlayer, "played a Guard against an invalid player")
 			state.eliminatePlayer(state.ActivePlayer)
 			state.LossWasStupid = true
 			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
 		if state.LastPlay[targetPlayer] == Handmaid {
-			state.logPlayer(state.ActivePlayer, "played a Guard, but it was blocked by a Handmaid")
+			// state.logPlayer(state.ActivePlayer, "played a Guard, but it was blocked by a Handmaid")
 			break
 		}
 		targetCard := state.CardInHand[targetPlayer]
-		state.logPlayer(state.ActivePlayer, "played a Guard, guessing "+action.SelectedCard.String())
+		// state.logPlayer(state.ActivePlayer, "played a Guard, guessing "+action.SelectedCard.String())
 		if targetCard == action.SelectedCard && targetCard != Guard {
 			state.eliminatePlayer(targetPlayer)
 		}
@@ -329,35 +329,35 @@ func (state *Gamestate) PlayCard(action Action, r *rand.Rand) {
 	case Priest:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a Priest
-			state.logPlayer(state.ActivePlayer, "played a Priest against an invalid player")
+			// state.logPlayer(state.ActivePlayer, "played a Priest against an invalid player")
 			state.eliminatePlayer(state.ActivePlayer)
 			state.LossWasStupid = true
 			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
 		if state.LastPlay[targetPlayer] == Handmaid {
-			state.logPlayer(state.ActivePlayer, "played a Priest, but it was blocked by a Handmaid")
+			// state.logPlayer(state.ActivePlayer, "played a Priest, but it was blocked by a Handmaid")
 			break
 		}
-		state.logPlayer(state.ActivePlayer, "played a Priest and saw a "+state.CardInHand[targetPlayer].String())
+		// state.logPlayer(state.ActivePlayer, "played a Priest and saw a "+state.CardInHand[targetPlayer].String())
 		state.KnownCards[targetPlayer][state.ActivePlayer] = state.CardInHand[targetPlayer]
 	case Baron:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a Baron
-			state.logPlayer(state.ActivePlayer, "played a Baron against an invalid player")
+			// state.logPlayer(state.ActivePlayer, "played a Baron against an invalid player")
 			state.eliminatePlayer(state.ActivePlayer)
 			state.LossWasStupid = true
 			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
 		if state.LastPlay[targetPlayer] == Handmaid {
-			state.logPlayer(state.ActivePlayer, "played a Baron, but it was blocked by a Handmaid")
+			// state.logPlayer(state.ActivePlayer, "played a Baron, but it was blocked by a Handmaid")
 			break
 		}
 		// Compare cards. Eliminate low. Tie does nothing
 		targetCard := state.CardInHand[targetPlayer]
 		activeCard := state.CardInHand[state.ActivePlayer]
-		state.logPlayer(state.ActivePlayer, "played a Baron, revealing a "+activeCard.String()+" against a "+targetCard.String())
+		// state.logPlayer(state.ActivePlayer, "played a Baron, revealing a "+activeCard.String()+" against a "+targetCard.String())
 		switch {
 		case int(targetCard) < int(activeCard):
 			state.eliminatePlayer(targetPlayer)
@@ -365,12 +365,12 @@ func (state *Gamestate) PlayCard(action Action, r *rand.Rand) {
 			state.eliminatePlayer(state.ActivePlayer)
 		}
 	case Handmaid:
-		state.logPlayer(state.ActivePlayer, "played a Handmaid")
+		// state.logPlayer(state.ActivePlayer, "played a Handmaid")
 		// Do nothing
 	case Prince:
 		if !(action.TargetPlayerOffset >= 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a Prince
-			state.logPlayer(state.ActivePlayer, "played a Prince against an invalid player")
+			// state.logPlayer(state.ActivePlayer, "played a Prince against an invalid player")
 			state.eliminatePlayer(state.ActivePlayer)
 			state.LossWasStupid = true
 			break
@@ -383,9 +383,9 @@ func (state *Gamestate) PlayCard(action Action, r *rand.Rand) {
 		}
 		targetCard := state.CardInHand[targetPlayer]
 		if targetPlayer == state.ActivePlayer {
-			state.logPlayer(state.ActivePlayer, "played a self-Prince, forcing a "+targetCard.String()+" to be discarded")
+			// state.logPlayer(state.ActivePlayer, "played a self-Prince, forcing a "+targetCard.String()+" to be discarded")
 		} else {
-			state.logPlayer(state.ActivePlayer, "played a Prince, forcing a "+targetCard.String()+" to be discarded")
+			// state.logPlayer(state.ActivePlayer, "played a Prince, forcing a "+targetCard.String()+" to be discarded")
 		}
 		if targetCard == Princess {
 			// Do this first to update FinalState.
@@ -404,14 +404,14 @@ func (state *Gamestate) PlayCard(action Action, r *rand.Rand) {
 	case King:
 		if !(action.TargetPlayerOffset > 0 && action.TargetPlayerOffset < state.NumPlayers) {
 			// You must target a valid player with a King
-			state.logPlayer(state.ActivePlayer, "played a King against an invalid player")
+			// state.logPlayer(state.ActivePlayer, "played a King against an invalid player")
 			state.eliminatePlayer(state.ActivePlayer)
 			state.LossWasStupid = true
 			break
 		}
 		targetPlayer := state.getTargetIDFromOffset(action.TargetPlayerOffset)
 		if state.LastPlay[targetPlayer] == Handmaid {
-			state.logPlayer(state.ActivePlayer, "played a King, but it was blocked by a Handmaid")
+			// state.logPlayer(state.ActivePlayer, "played a King, but it was blocked by a Handmaid")
 			break
 		}
 		// Trade hands
@@ -430,18 +430,18 @@ func (state *Gamestate) PlayCard(action Action, r *rand.Rand) {
 		}
 		state.KnownCards[state.ActivePlayer][targetPlayer] = targetCard
 		state.KnownCards[targetPlayer][state.ActivePlayer] = activeCard
-		state.logPlayer(state.ActivePlayer, "played a King")
+		// state.logPlayer(state.ActivePlayer, "played a King")
 	case Countess:
 		// Do nothing
-		state.logPlayer(state.ActivePlayer, "played a Countess")
+		// state.logPlayer(state.ActivePlayer, "played a Countess")
 	case Princess:
 		// Idiot!
-		state.logPlayer(state.ActivePlayer, "played a Princess")
+		// state.logPlayer(state.ActivePlayer, "played a Princess")
 		state.eliminatePlayer(state.ActivePlayer)
 		state.LossWasStupid = true
 	default:
 		// An invalid card was played
-		state.logPlayer(state.ActivePlayer, "played an invalid card (ERROR!)")
+		// state.logPlayer(state.ActivePlayer, "played an invalid card (ERROR!)")
 		state.eliminatePlayer(state.ActivePlayer)
 		state.LossWasStupid = true
 	}
@@ -499,9 +499,9 @@ func (state *Gamestate) triggerGameEnd() {
 				tie = true // We don't deal with this
 			}
 		}
-		state.logPlayer(state.Winner, fmt.Sprintf("won (%d to %d)", scores[0], scores[1]))
+		// state.logPlayer(state.Winner, fmt.Sprintf("won (%d to %d)", scores[0], scores[1]))
 	} else {
-		state.logPlayer(state.Winner, "won ("+state.CardInHand[0].String()+" vs "+state.CardInHand[1].String()+")")
+		// state.logPlayer(state.Winner, "won ("+state.CardInHand[0].String()+" vs "+state.CardInHand[1].String()+")")
 	}
 
 	state.GameEnded = true
