@@ -43,6 +43,7 @@ const (
 
 var (
 	Runners = 16
+	Output  = true
 )
 
 func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
@@ -122,7 +123,10 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 
 	trs[0].tp.Finalize()
 	trs[1].tp.Finalize()
-	fmt.Fprintln(os.Stderr, "\r100.0% complete")
+
+	if Output {
+		fmt.Fprintln(os.Stderr, "\r100.0% complete")
+	}
 }
 
 func status(episodes, epPrintMod int, ch chan int) {
@@ -131,7 +135,7 @@ func status(episodes, epPrintMod int, ch chan int) {
 	for i := range ch {
 		count += i
 		current += i
-		if current >= epPrintMod {
+		if current >= epPrintMod && Output {
 			fmt.Fprintf(os.Stderr, "\r%2.2f%% complete", float32(count)/float32(episodes)*100)
 			current -= epPrintMod
 		}

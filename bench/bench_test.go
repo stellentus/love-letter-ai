@@ -7,6 +7,10 @@ import (
 	"love-letter-ai/td"
 )
 
+func init() {
+	players.Output = false
+}
+
 func BenchmarkQLearner1(b *testing.B) {
 	players.Runners = 1
 	sar := td.NewTD(0.3, 1)
