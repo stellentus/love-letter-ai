@@ -38,8 +38,11 @@ const (
 	forfeitWinReward = 1 // Only a minor benefit for winning because the other player was an idiot
 	noReward         = 0
 	lossReward       = -0.1 // The penalty for losing is minor since it might not have been the player's fault
-	runners          = 32
-	chunkSize        = 100
+	chunkSize        = 1000
+)
+
+var (
+	Runners = 16
 )
 
 func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
@@ -52,7 +55,7 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 	in := make(chan int)
 	out := make(chan int)
 
-	for i := 0; i < runners; i++ {
+	for i := 0; i < Runners; i++ {
 		wg.Add(1)
 		go func() {
 			for games := range in {
