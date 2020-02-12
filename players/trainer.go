@@ -19,7 +19,9 @@ type TrainingPlayer interface {
 	GreedyAction(state int) (*rules.Action, int)
 
 	// UpdateQ is called to update the player's state-action values.
-	UpdateQ(gameEnded bool, lastQ, sa int, reward float32)
+	// qStates is a slice of state-action ints representing the states seen
+	// (and actions chosen) so far by this player.
+	UpdateQ(gameEnded bool, qStates []int, reward float32)
 
 	// Finalize is called at the end in case any cleanup is necessary.
 	Finalize()
@@ -174,6 +176,6 @@ func (tr *trainer) updateQ(gameEnded bool, sa int, reward float32) {
 	numStates := len(tr.qStates)
 	// Now save the update
 	if numStates > 1 {
-		tr.tp.UpdateQ(gameEnded, tr.qStates[numStates-2], sa, reward)
+		tr.tp.UpdateQ(gameEnded, tr.qStates, reward)
 	}
 }
