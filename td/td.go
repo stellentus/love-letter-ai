@@ -73,6 +73,8 @@ type fileHeader struct {
 	ActionSpaceMagnitude uint64
 }
 
+const currentFileFormatVersion = 2
+
 func (sarsa TD) SaveToFile(path string) error {
 	file, err := os.Create(path)
 	defer file.Close()
@@ -84,7 +86,7 @@ func (sarsa TD) SaveToFile(path string) error {
 	writer := bufio.NewWriter(file)
 
 	err = binary.Write(writer, binary.BigEndian, fileHeader{
-		Version:              2,
+		Version:              currentFileFormatVersion,
 		Alpha:                sarsa.Alpha,
 		Gamma:                sarsa.Gamma,
 		ActionSpaceMagnitude: uint64(length),
@@ -120,8 +122,8 @@ func (sarsa *TD) LoadFromFile(path string) error {
 	if err = binary.Read(reader, binary.BigEndian, header); err != nil {
 		return err
 	}
-	if header.Version != 1 {
-		return fmt.Errorf("Cannot load SARSA weights from version not 1 (%d)", header.Version)
+	if header.Version != currentFileFormatVersion {
+		return fmt.Errorf("Cannot load SARSA weights from version not %d (%d)", currentFileFormatVersion, header.Version)
 	}
 	if int(header.ActionSpaceMagnitude) != length {
 		return fmt.Errorf("Cannot load SARSA weights from file size not %d (%d)", state.ActionSpaceMagnitude, header.ActionSpaceMagnitude)
