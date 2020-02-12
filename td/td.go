@@ -56,20 +56,22 @@ func (sar TD) PlayCardRand(state state.Simple, r *rand.Rand) rules.Action {
 // greedyAction returns the greedy action for the given state. (Note the argument should be a state, not an action-state.)
 // Ties are broken by choosing the first option (i.e. arbitrarily in a deterministic way).
 func (sarsa TD) GreedyAction(st int) (*rules.Action, int) {
-	bestAct := 0
+	bestActs := []int{}
 	bestActValue := float32(0)
 	bestActState := 0
 	for act, actState := range state.AllActionStates(st) {
 		thisVal := sarsa.qf[actState]
 		if thisVal > bestActValue {
 			bestActValue = thisVal
-			bestAct = act
+			bestActs = []int{act}
 			bestActState = actState
+		} else if thisVal == bestActValue {
+			bestActs = append(bestActs, act)
 		}
 	}
-	if bestAct != 0 {
-		act := rules.ActionFromInt(bestAct)
-		return &act, bestActState
+	if len(bestActs) > 0 {
+		bestAct := rules.ActionFromInt(bestActs[0])
+		return &bestAct, bestActState
 	} else {
 		return nil, 0
 	}
