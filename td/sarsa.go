@@ -17,11 +17,11 @@ type sarsaLearner struct{ TD }
 func (lrn sarsaLearner) Finalize() {}
 
 func (sl sarsaLearner) UpdateQ(gameEnded bool, qStates []int, reward float32) {
-	lastQ, sa := qStates[len(qStates)-2], qStates[len(qStates)-1]
+	lastQ, thisQ := qStates[len(qStates)-2], qStates[len(qStates)-1]
 
 	thisValue := float32(0) // If game ended, the value of the new state is 0 because it's a terminal state
 	if !gameEnded {
-		thisValue = sl.Gamma * sl.qf[sa]
+		thisValue = sl.Gamma * sl.qf[thisQ]
 	}
 	sl.qf[lastQ] += sl.Alpha * (reward + thisValue - sl.qf[lastQ])
 }
@@ -35,16 +35,16 @@ type qLearner struct{ TD }
 func (lrn qLearner) Finalize() {}
 
 func (lrn qLearner) UpdateQ(gameEnded bool, qStates []int, reward float32) {
-	lastQ, sa := qStates[len(qStates)-2], qStates[len(qStates)-1]
+	lastQ, thisQ := qStates[len(qStates)-2], qStates[len(qStates)-1]
 
 	// The expected value is the greedy policy.
 	thisValue := float32(0) // If game ended, the value of the new state is 0 because it's a terminal state
 	if !gameEnded {
-		st := state.IndexWithoutAction(sa)
+		st := state.IndexWithoutAction(thisQ)
 		act, greedySA := lrn.GreedyAction(st)
 		if act == nil {
 			// We don't have enough data to know what's greedy. I'm not sure if this is common or impossible.
-			greedySA = sa
+			greedySA = thisQ
 		}
 		thisValue = lrn.Gamma * lrn.qf[greedySA]
 	}
@@ -84,21 +84,21 @@ func (lrn doubleQLearner) GreedyAction(state int) (*rules.Action, int) {
 }
 
 func (lrn doubleQLearner) UpdateQ(gameEnded bool, qStates []int, reward float32) {
-	lastQ, sa := qStates[len(qStates)-2], qStates[len(qStates)-1]
+	lastQ, thisQ := qStates[len(qStates)-2], qStates[len(qStates)-1]
 
 	pick := lrn.randTD()
-	lrn.updateQ(lrn.td[pick], lrn.td[(pick+1)%2], gameEnded, lastQ, sa, reward)
+	lrn.updateQ(lrn.td[pick], lrn.td[(pick+1)%2], gameEnded, lastQ, thisQ, reward)
 }
 
-func (lrn doubleQLearner) updateQ(a, b TD, gameEnded bool, lastQ, sa int, reward float32) {
+func (lrn doubleQLearner) updateQ(a, b TD, gameEnded bool, lastQ, thisQ int, reward float32) {
 	// The expected value is the greedy policy.
 	thisValue := float32(0) // If game ended, the value of the new state is 0 because it's a terminal state
 	if !gameEnded {
-		st := state.IndexWithoutAction(sa)
+		st := state.IndexWithoutAction(thisQ)
 		act, greedySA := a.GreedyAction(st)
 		if act == nil {
 			// We don't have enough data to know what's greedy. I'm not sure if this is common or impossible.
-			greedySA = sa
+			greedySA = thisQ
 		}
 		thisValue = a.Gamma * b.qf[greedySA]
 	}
