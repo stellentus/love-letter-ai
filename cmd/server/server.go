@@ -63,9 +63,9 @@ func main() {
 	}
 
 	if *sarsaFile != "" {
-		sarsa := td.NewSarsa(0, 0, 0)
+		sarsa := td.NewTD(0, 0)
 		exitIfError(sarsa.LoadFromFile(*sarsaFile), "loading sarsa file")
-		bots["sarsa"] = sarsa.NewPlayer()
+		bots["sarsa"] = sarsa.SarsaLearner()
 	}
 
 	if *qFile != "" {
