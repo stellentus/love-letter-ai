@@ -16,8 +16,9 @@ type sarsaLearner struct{ TD }
 
 func (lrn sarsaLearner) Finalize() {}
 
-func (sl sarsaLearner) UpdateQ(gameEnded bool, qStates []int, reward float32) {
+func (sl sarsaLearner) UpdateQ(gameEnded bool, qStates []int, rewards []float32) {
 	lastQ, thisQ := qStates[len(qStates)-2], qStates[len(qStates)-1]
+	reward := rewards[len(rewards)-1]
 
 	thisValue := float32(0) // If game ended, the value of the new state is 0 because it's a terminal state
 	if !gameEnded {
@@ -34,8 +35,9 @@ type qLearner struct{ TD }
 
 func (lrn qLearner) Finalize() {}
 
-func (lrn qLearner) UpdateQ(gameEnded bool, qStates []int, reward float32) {
+func (lrn qLearner) UpdateQ(gameEnded bool, qStates []int, rewards []float32) {
 	lastQ, thisQ := qStates[len(qStates)-2], qStates[len(qStates)-1]
+	reward := rewards[len(rewards)-1]
 
 	// The expected value is the greedy policy.
 	thisValue := float32(0) // If game ended, the value of the new state is 0 because it's a terminal state
@@ -83,8 +85,9 @@ func (lrn doubleQLearner) GreedyAction(state int) (*rules.Action, int) {
 	return lrn.td[lrn.randTD()].GreedyAction(state)
 }
 
-func (lrn doubleQLearner) UpdateQ(gameEnded bool, qStates []int, reward float32) {
+func (lrn doubleQLearner) UpdateQ(gameEnded bool, qStates []int, rewards []float32) {
 	lastQ, thisQ := qStates[len(qStates)-2], qStates[len(qStates)-1]
+	reward := rewards[len(rewards)-1]
 
 	pick := lrn.randTD()
 	lrn.updateQ(lrn.td[pick], lrn.td[(pick+1)%2], gameEnded, lastQ, thisQ, reward)
