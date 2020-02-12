@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"runtime"
 	"sync"
 
 	"love-letter-ai/rules"
@@ -43,7 +44,7 @@ const (
 )
 
 var (
-	Runners = 16
+	Runners = runtime.GOMAXPROCS(0)
 	Output  = true
 )
 
