@@ -29,11 +29,11 @@ func IndexWithoutAction(actionIndex int) int {
 
 // AllActionStates returns all possible ActionStates for a given state.
 // It does not eliminate actions that are impossible for the given state, so it always returns 16 options.
-func AllActionStates(state int) []int {
-	states := make([]int, 0, 16)
+func AllActionStates(state int) [16]int {
+	states := [16]int{}
 	baseState := state << 4
 	for i := 0; i < 16; i++ {
-		states = append(states, baseState+i)
+		states[i] = baseState + i
 	}
 	return states
 }

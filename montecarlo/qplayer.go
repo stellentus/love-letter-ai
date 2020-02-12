@@ -62,6 +62,14 @@ func (qp *QPlayer) PlayCard(state state.Simple) rules.Action {
 	return *act
 }
 
+func (qp *QPlayer) PlayCardRand(state state.Simple, r *rand.Rand) rules.Action {
+	act := qp.policy(state.AsIndex())
+	if act == nil || r.Float32() < qp.epsilon {
+		return (&players.RandomPlayer{}).PlayCardRand(state, r)
+	}
+	return *act
+}
+
 func (qp QPlayer) Value(st int) float32 {
 	cnt := float32(qp.qf[st].count)
 	if cnt == 0.0 {

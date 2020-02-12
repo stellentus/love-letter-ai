@@ -2,6 +2,9 @@ package gamemaster
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
+
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
@@ -21,7 +24,8 @@ type Trace struct {
 
 // TraceOneGame returns the states for one gameplay played by the provided player pl.
 func TraceOneGame(pl players.Player) (Trace, error) {
-	sg, err := rules.NewGame(2)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	sg, err := rules.NewGame(2, r)
 	if err != nil {
 		return Trace{}, err
 	}
@@ -40,7 +44,7 @@ func TraceOneGame(pl players.Player) (Trace, error) {
 			return Trace{}, fmt.Errorf("Negative state was calculated: %d %d", ss, sa)
 		}
 		tr.StateInfos = append(tr.StateInfos, StateInfo{State: ss, ActionState: sa})
-		sg.PlayCard(action)
+		sg.PlayCard(action, r)
 	}
 
 	numPlays := len(tr.StateInfos)

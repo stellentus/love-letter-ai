@@ -131,12 +131,12 @@ func (deck Deck) Copy() Deck {
 	return deck2
 }
 
-func (deck *Deck) Draw() Card {
+func (deck *Deck) Draw(r *rand.Rand) Card {
 	size := deck.Size()
 	if size == 0 {
 		return None
 	}
-	draw := int(rand.Int31n(int32(size)))
+	draw := int(r.Int31n(int32(size)))
 	for name, count := range deck {
 		if draw < count {
 			deck[name] -= 1
