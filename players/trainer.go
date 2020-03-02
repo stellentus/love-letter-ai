@@ -6,7 +6,6 @@ import (
 	"os"
 	"runtime"
 	"sync"
-	"time"
 
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
@@ -61,6 +60,8 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 	in := make(chan int)
 	out := make(chan int)
 
+	rand.Seed(7738) // Change to time.Now().UnixNano() if you don't want deterministic behavior
+
 	for i := 0; i < Runners; i++ {
 		wg.Add(1)
 		go func(seed int64) {
@@ -105,7 +106,7 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 				out <- games
 			}
 			wg.Done()
-		}(time.Now().UnixNano())
+		}(rand.Int63())
 	}
 
 	epPrintMod := episodes / 100000

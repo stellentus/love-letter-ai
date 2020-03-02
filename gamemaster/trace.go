@@ -3,7 +3,6 @@ package gamemaster
 import (
 	"fmt"
 	"math/rand"
-	"time"
 
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
@@ -24,7 +23,7 @@ type Trace struct {
 
 // TraceOneGame returns the states for one gameplay played by the provided player pl.
 func TraceOneGame(pl players.Player) (Trace, error) {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewSource(rand.Int63()))
 	sg, err := rules.NewGame(2, r)
 	if err != nil {
 		return Trace{}, err

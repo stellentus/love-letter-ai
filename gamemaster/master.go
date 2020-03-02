@@ -2,7 +2,6 @@ package gamemaster
 
 import (
 	"math/rand"
-	"time"
 
 	"love-letter-ai/players"
 	"love-letter-ai/rules"
@@ -26,7 +25,7 @@ type Gamemaster struct {
 }
 
 func New(players []players.Player) (Gamemaster, error) {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewSource(rand.Int63()))
 	state, err := rules.NewGame(len(players), r)
 	return Gamemaster{
 		Players:   players,
