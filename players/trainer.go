@@ -43,7 +43,7 @@ const (
 	unsetState       = state.ActionSpaceMagnitude
 	winReward        = 100
 	stupidReward     = -100
-	forfeitWinReward = 1 // Only a minor benefit for winning because the other player was an idiot
+	forfeitWinReward = winReward // A win is a win, even if the other player was an idiot. (This isn't very important. Even after 1 million games, this only changes win rates by a few percent. It should be very rare after many plays.)
 	HalfWinReward    = winReward / 2
 	noReward         = 0
 	lossReward       = -0.1 // The penalty for losing is minor since it might not have been the player's fault
