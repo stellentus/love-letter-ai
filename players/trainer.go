@@ -41,13 +41,15 @@ type trainer struct {
 
 const (
 	unsetState       = state.ActionSpaceMagnitude
+	chunkSize        = 1000
+
+	// The comments for the below reward settings were run with `sarsafight.go -epochs 5 -games 1000000 -n 10000` for 1-step Q-learning. Max win rate was around 33%, so these might not be idea for longer training.
 	winReward        = 100
-	stupidReward     = -100
+	stupidReward     = lossReward*100
 	forfeitWinReward = winReward      // A win is a win, even if the other player was an idiot. (This isn't very important. Even after 1 million games, this only changes win rates by a few percent. It should be very rare after many plays.)
 	HalfWinReward    = winReward / 25 // Used for optimistic initial weights. Setting this too high (greater than winReward/2) has a small negative impact. Setting to zero is much worse. Between winReward/2 and winReward/100 is ideal.
 	noReward         = 0
-	lossReward       = -0.1 // The penalty for losing is minor since it might not have been the player's fault
-	chunkSize        = 1000
+	lossReward       = -1 // The penalty for losing is minor since it might not have been the player's fault. This can range from 0 to -100 with good results.
 )
 
 var (
