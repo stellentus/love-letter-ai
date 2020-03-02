@@ -55,11 +55,6 @@ var (
 )
 
 func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
-	trs := make([]trainer, len(pls))
-	for i, pl := range pls {
-		trs[i] = trainer{tp: pl}
-	}
-
 	wg := sync.WaitGroup{}
 	in := make(chan int)
 	out := make(chan int)
@@ -67,6 +62,11 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 	for i := 0; i < Runners; i++ {
 		wg.Add(1)
 		go func() {
+			trs := make([]trainer, len(pls))
+			for i, pl := range pls {
+				trs[i] = trainer{tp: pl}
+			}
+
 			r := rand.New(rand.NewSource(int64(i)))
 			for games := range in {
 				templateSG, err := rules.NewGame(2, r)
@@ -128,8 +128,8 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 	close(out)
 	wg.Wait()
 
-	trs[0].tp.Finalize()
-	trs[1].tp.Finalize()
+	pls[0].Finalize()
+	pls[1].Finalize()
 
 	if Output {
 		fmt.Fprintln(os.Stderr, "\r100.0% complete")
