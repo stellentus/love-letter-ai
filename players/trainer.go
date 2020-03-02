@@ -60,8 +60,6 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 	in := make(chan int)
 	out := make(chan int)
 
-	rand.Seed(7738) // Change to time.Now().UnixNano() if you don't want deterministic behavior
-
 	for i := 0; i < Runners; i++ {
 		wg.Add(1)
 		go func(seed int64) {

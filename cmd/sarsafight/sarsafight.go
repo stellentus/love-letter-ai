@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 
@@ -54,6 +55,8 @@ func main() {
 		sar.QLearner(),
 		sar.QLearner(),
 	}
+
+	rand.Seed(7738) // Change to time.Now().UnixNano() if you don't want deterministic behavior
 
 	for j := 0; j < *nEpochs; j++ {
 		fmt.Printf("Running vs self %d...\n", j+1)
