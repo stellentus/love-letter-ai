@@ -11,6 +11,17 @@ func Index(seenCards rules.Deck, recent, old, opponent rules.Card, scoreDelta in
 	return (((seenCards.AsInt() << 5) + scoreValue(scoreDelta)) << 9) + handValue(recent, old, opponent)
 }
 
+// expects state value in lower 5 bits
+// a delta greater than 15 is just 15
+func scoreFromValue(state int) int {
+	scoreDelta := state & 0xF
+	if state&0x10 == 0x10 {
+		// Sign bit was set
+		scoreDelta *= -1
+	}
+	return scoreDelta
+}
+
 // 5 bits
 func scoreValue(scoreDelta int) int {
 	value := scoreDelta

@@ -47,20 +47,35 @@ func TestFullState(t *testing.T) {
 	assert.EqualValues(t, SpaceMagnitude-1, Index(seenCards, high, low, opponent, scoreDelta))
 }
 
+var scoreDeltaTests = []struct{ score, state int }{
+	{0, 0},
+	{3, 3},
+	{15, 15},
+	{16, 15},
+	{2356, 15},
+	{-3, 19},
+	{-15, 31},
+	{-16, 31},
+	{-2356, 31},
+}
+
 func TestScoreDelta(t *testing.T) {
-	tests := []struct{ in, out int }{
-		{0, 0},
-		{3, 3},
-		{15, 15},
-		{16, 15},
-		{2356, 15},
-		{-3, 19},
-		{-15, 31},
-		{-16, 31},
-		{-2356, 31},
+	for _, test := range scoreDeltaTests {
+		assert.EqualValues(t, test.state, scoreValue(test.score))
 	}
-	for _, test := range tests {
-		assert.EqualValues(t, test.out, scoreValue(test.in))
+}
+
+func TestReverseScoreDelta(t *testing.T) {
+	for _, test := range scoreDeltaTests {
+		score := test.score
+		// Reversing has smaller range
+		if score > 15 {
+			score = 15
+		}
+		if score < -15 {
+			score = -15
+		}
+		assert.EqualValues(t, score, scoreFromValue(test.state))
 	}
 }
 
