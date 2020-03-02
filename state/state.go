@@ -6,6 +6,11 @@ import "love-letter-ai/rules"
 // Note that some of these states are impossible to achieve in real gameplay.
 const SpaceMagnitude = rules.DeckSpaceMagnitude * 32 * 512 // deck*score*hand bits equals the size of the statespace
 
+// TerminalState represents a state that can't regularly be reached.
+// The value of `FromIndex(TerminalState)` is that the active player is holding 2 princess cards, the opponent also
+// has a princess, the entire deck is in the discard pile, and the score delta is -15. So, obviously impossible.
+const TerminalState = SpaceMagnitude - 1
+
 // Index returns a unique number between 0 and SpaceMagnitude-1 for the given state.
 func Index(seenCards rules.Deck, recent, old, opponent rules.Card, scoreDelta int) int {
 	return (((seenCards.AsInt() << 5) + scoreValue(scoreDelta)) << 9) + handValue(recent, old, opponent)
