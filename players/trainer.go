@@ -41,11 +41,12 @@ type trainer struct {
 
 const (
 	unsetState       = state.ActionSpaceMagnitude
-	winReward        = 100
-	stupidReward     = -100
-	forfeitWinReward = 1 // Only a minor benefit for winning because the other player was an idiot
+	winReward        = 1
+	HalfWinReward    = winReward / 2
+	stupidReward     = -1
+	forfeitWinReward = winReward / 128 // Only a minor benefit for winning because the other player was an idiot
 	noReward         = 0
-	lossReward       = -0.1 // The penalty for losing is minor since it might not have been the player's fault
+	lossReward       = -winReward / 128 // The penalty for losing is minor since it might not have been the player's fault
 	chunkSize        = 1000
 )
 

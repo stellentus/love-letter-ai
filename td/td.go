@@ -24,7 +24,7 @@ func NewTD(alpha, gamma float32) *TD {
 		Gamma: gamma,
 	}
 	for i := range sar.qf {
-		sar.qf[i] = 0.5
+		sar.qf[i] = players.HalfWinReward
 	}
 	sar.qf[state.TerminalState] = 0
 	return sar
