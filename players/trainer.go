@@ -19,7 +19,9 @@ type TrainingPlayer interface {
 	GreedyAction(state int) (*rules.Action, int)
 
 	// UpdateQ is called to update the player's state-action values.
-	UpdateQ(gameEnded bool, lastQ, sa int, reward float32)
+	// qStates is a slice of state-action ints representing the states seen
+	// (and actions chosen) so far by this player.
+	UpdateQ(gameEnded bool, qStates []int, rewards []float32)
 
 	// Finalize is called at the end in case any cleanup is necessary.
 	Finalize()
@@ -29,8 +31,12 @@ type trainer struct {
 	// tp is the player model being trained
 	tp TrainingPlayer
 
-	// lastQ was the last state-action value.
-	lastQ int
+	// qStates is a slice of state-action ints representing the states seen
+	// (and actions chosen) so far by this player.
+	qStates []int
+
+	// rewards is a slice of all rewards received so far.
+	rewards []float32
 }
 
 const (
@@ -70,8 +76,10 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 				for i := 0; i < games; i++ {
 					sg := templateSG.Copy()
 
-					trs[0].lastQ = unsetState
-					trs[1].lastQ = unsetState
+					trs[0].qStates = make([]int, 0, 8) // I think maximum number of turns is 6, but whatever
+					trs[1].qStates = make([]int, 0, 8)
+					trs[0].rewards = make([]float32, 0, 8)
+					trs[1].rewards = make([]float32, 0, 8)
 
 					for !sg.GameEnded {
 						action, err := trs[sg.ActivePlayer].learningAction(sg, epsilon, r)
@@ -168,9 +176,12 @@ func (tr *trainer) learningAction(game rules.Gamestate, epsilon float64, r *rand
 }
 
 func (tr *trainer) updateQ(gameEnded bool, sa int, reward float32) {
+	tr.qStates = append(tr.qStates, sa)
+	tr.rewards = append(tr.rewards, reward)
+
+	numStates := len(tr.qStates)
 	// Now save the update
-	if tr.lastQ != unsetState {
-		tr.tp.UpdateQ(gameEnded, tr.lastQ, sa, reward)
+	if numStates > 1 {
+		tr.tp.UpdateQ(gameEnded, tr.qStates, tr.rewards)
 	}
-	tr.lastQ = sa
 }
