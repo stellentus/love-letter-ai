@@ -17,34 +17,23 @@ func BenchmarkIndex(b *testing.B) {
 	}
 }
 
-func TestZeroState(t *testing.T) {
-	seenCards := rules.DefaultDeck()
-	for i := range seenCards {
-		seenCards[i] = 0
+var entireStateTests = []struct {
+	high, low, opponent rules.Card
+	scoreDelta          int
+	seenCards           rules.Deck
+	state               int
+	msg                 string
+}{
+	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{}, 0, "zero state"},
+	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{rules.Guard: 1}, 1 << (5 + 9), "minimal deck"},
+	{rules.Princess, rules.Countess, rules.King, -15, rules.Deck{}, 16317, "full state simple deck"},
+	{rules.Princess, rules.Princess, rules.Princess, -15, rules.DefaultDeck(), SpaceMagnitude - 1, "full state"},
+}
+
+func TestState(t *testing.T) {
+	for _, test := range entireStateTests {
+		assert.EqualValues(t, test.state, Index(test.seenCards, test.high, test.low, test.opponent, test.scoreDelta), "State for "+test.msg)
 	}
-	high, low, opponent := rules.Guard, rules.Guard, rules.Guard
-	scoreDelta := 0
-	assert.EqualValues(t, 0, Index(seenCards, high, low, opponent, scoreDelta))
-}
-
-func TestMinimalDeck(t *testing.T) {
-	high, low, opponent := rules.Guard, rules.Guard, rules.Guard
-	scoreDelta := 0
-	deck := rules.Deck{rules.Guard: 1}
-	assert.EqualValues(t, 1<<(5+9), Index(deck, high, low, opponent, scoreDelta))
-}
-
-func TestFullStateSimpleDeck(t *testing.T) {
-	high, low, opponent := rules.Princess, rules.Countess, rules.King
-	scoreDelta := -15
-	assert.EqualValues(t, 16317, Index(rules.Deck{}, high, low, opponent, scoreDelta))
-}
-
-func TestFullState(t *testing.T) {
-	seenCards := rules.DefaultDeck()
-	high, low, opponent := rules.Princess, rules.Princess, rules.Princess
-	scoreDelta := -15
-	assert.EqualValues(t, SpaceMagnitude-1, Index(seenCards, high, low, opponent, scoreDelta))
 }
 
 var scoreDeltaTests = []struct{ score, state int }{
