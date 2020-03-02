@@ -89,10 +89,10 @@ func printTraces(n int, sar *td.TD) {
 			panic(err.Error())
 		}
 		fmt.Printf("Game %d winner: %d\n", i, tr.Winner)
-		for _, v := range tr.StateInfos {
+		for plID, v := range tr.StateInfos {
 			seenCards, recent, old, opponent, scoreDelta := state.FromIndex(v.ActionState >> 4)
 			action := rules.ActionFromInt(v.ActionState & 0xF)
-			fmt.Printf("    %08X: %0.3f (1:%v, 2:%v, o:%v, del:%d, deck:%v)(1:%v, o:%d, g:%v)\n", v.ActionState, sar.Value(v.ActionState), recent, old, opponent, scoreDelta, seenCards, action.PlayRecent, action.TargetPlayerOffset, action.SelectedCard)
+			fmt.Printf("    %d: %08X: %0.3f (1:%v, 2:%v, o:%v, del:%d, deck:%v)(1:%v, o:%d, g:%v)\n", plID%2, v.ActionState, sar.Value(v.ActionState), recent, old, opponent, scoreDelta, seenCards, action.PlayRecent, action.TargetPlayerOffset, action.SelectedCard)
 		}
 		fists = append(fists, tr.FinalState)
 	}
