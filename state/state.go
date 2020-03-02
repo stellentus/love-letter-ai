@@ -37,6 +37,13 @@ func scoreValue(scoreDelta int) int {
 	return value
 }
 
+func handFromValue(state int) (recent, old, opponent rules.Card) {
+	opponent = rules.Card(state&0x7) + 1
+	recent = rules.Card((state>>3)&0x7) + 1
+	old = rules.Card((state>>6)&0x7) + 1
+	return
+}
+
 // 9 bits
 func handValue(recent, old, opponent rules.Card) int {
 	recent--

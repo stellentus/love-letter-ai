@@ -79,8 +79,27 @@ func TestReverseScoreDelta(t *testing.T) {
 	}
 }
 
+var handValuesTests = []struct {
+	recent, old, opponent rules.Card
+	state                 int
+	msg                   string
+}{
+	{rules.Guard, rules.Guard, rules.Guard, 0, "Lowest"},
+	{rules.Priest, rules.Priest, rules.Priest, 73, "Priests"},
+	{rules.Princess, rules.Princess, rules.Princess, 511, "Max theoretically"},
+}
+
 func TestHandValues(t *testing.T) {
-	assert.EqualValues(t, 0, handValue(rules.Guard, rules.Guard, rules.Guard), "Lowest")
-	assert.EqualValues(t, 73, handValue(rules.Priest, rules.Priest, rules.Priest), "Priests")
-	assert.EqualValues(t, 511, handValue(rules.Princess, rules.Princess, rules.Princess), "Max theoretically")
+	for _, test := range handValuesTests {
+		assert.EqualValues(t, test.state, handValue(test.recent, test.old, test.opponent), test.msg)
+	}
+}
+
+func TestReverseHandValues(t *testing.T) {
+	for _, test := range handValuesTests {
+		recent, old, opponent := handFromValue(test.state)
+		assert.EqualValues(t, test.recent, recent, "Reverse recent with "+test.msg)
+		assert.EqualValues(t, test.old, old, "Reverse old with "+test.msg)
+		assert.EqualValues(t, test.opponent, opponent, "Reverse opponent with "+test.msg)
+	}
 }
