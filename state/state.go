@@ -4,7 +4,9 @@ import "love-letter-ai/rules"
 
 // SpaceMagnitude represents the number of possible states considered.
 // Note that some of these states are impossible to achieve in real gameplay.
-const SpaceMagnitude = rules.DeckSpaceMagnitude * 32 * 512 // deck*score*hand bits equals the size of the statespace
+const stateNumberOfBits = rules.DeckSpaceBits + 5 + 9
+const SpaceMagnitude = 1 << stateNumberOfBits
+const largestPossibleStateValue = rules.DeckSpaceMagnitude*32*512 - 1 // deck*score*hand bits equals the size of the statespace
 
 // TerminalState represents a state that can't regularly be reached.
 // The value of `FromIndex(TerminalState)` is that the active player is holding 2 princess cards, the opponent also

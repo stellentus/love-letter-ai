@@ -27,7 +27,7 @@ var entireStateTests = []struct {
 	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{}, 0, "zero state"},
 	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{rules.Guard: 1}, 1 << (5 + 9), "minimal deck"},
 	{rules.Princess, rules.Countess, rules.King, -15, rules.Deck{}, 16317, "full state simple deck"},
-	{rules.Princess, rules.Princess, rules.Princess, -15, rules.DefaultDeck(), SpaceMagnitude - 1, "full state"},
+	{rules.Princess, rules.Princess, rules.Princess, -15, rules.DefaultDeck(), largestPossibleStateValue, "full state"},
 }
 
 func TestState(t *testing.T) {

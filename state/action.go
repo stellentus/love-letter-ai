@@ -20,24 +20,24 @@ func Indices(seenCards rules.Deck, recent, old, opponent rules.Card, scoreDelta 
 }
 
 func IndexWithAction(stateIndex int, act rules.Action) int {
-	return (stateIndex << 4) + act.AsInt()
+	return stateIndex + (act.AsInt() << stateNumberOfBits)
 }
 
 func IndexWithoutAction(actionIndex int) int {
-	return actionIndex >> 4
+	return actionIndex & ((1 << stateNumberOfBits) - 1)
 }
 
 func ActionFromIndex(actionIndex int) int {
-	return actionIndex&0xF
+	return actionIndex >> stateNumberOfBits
 }
 
 // AllActionStates returns all possible ActionStates for a given state.
 // It does not eliminate actions that are impossible for the given state, so it always returns 16 options.
 func AllActionStates(state int) [16]int {
 	states := [16]int{}
-	baseState := state << 4
+	baseState := state
 	for i := 0; i < 16; i++ {
-		states[i] = baseState + i
+		states[i] = baseState + (i << stateNumberOfBits)
 	}
 	return states
 }

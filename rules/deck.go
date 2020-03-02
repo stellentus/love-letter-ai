@@ -179,6 +179,7 @@ func (stack Stack) Copy() Stack {
 }
 
 const DeckSpaceMagnitude = 6 * 3 * 3 * 3 * 3 * 2 * 2 * 2
+const DeckSpaceBits = 12
 
 func (sc Deck) AsInt() int {
 	// uses 12 bits

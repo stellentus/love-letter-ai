@@ -31,10 +31,9 @@ var entireStateActionTests = []struct {
 	msg                   string
 }{
 	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{}, rules.Action{}, 0, "zero state zero action"},
-	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{}, rules.Action{PlayRecent: true, TargetPlayerOffset: 0, SelectedCard: rules.Princess}, 15, "zero state full action"},
-	{rules.Princess, rules.Countess, rules.King, -15, rules.Deck{}, rules.Action{}, 16317 << 4, "full state zero action"},
-	{rules.Princess, rules.Countess, rules.King, -15, rules.Deck{}, rules.Action{PlayRecent: true, TargetPlayerOffset: 0, SelectedCard: rules.Princess}, 15 + (16317 << 4), "simple deck full action"},
-	{rules.Princess, rules.Princess, rules.Princess, -15, rules.DefaultDeck(), rules.Action{PlayRecent: true, TargetPlayerOffset: 0, SelectedCard: rules.Princess}, ActionSpaceMagnitude - 1, "full state full action"},
+	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{}, rules.Action{PlayRecent: true, TargetPlayerOffset: 0, SelectedCard: rules.Princess}, 15 << 26, "zero state full action"},
+	{rules.Princess, rules.Countess, rules.King, -15, rules.Deck{}, rules.Action{}, 16317, "full state zero action"},
+	{rules.Princess, rules.Countess, rules.King, -15, rules.Deck{}, rules.Action{PlayRecent: true, TargetPlayerOffset: 0, SelectedCard: rules.Princess}, (15 << 26) + 16317, "simple deck full action"},
 }
 
 func TestActionState(t *testing.T) {
@@ -53,10 +52,13 @@ func TestActionStateToState(t *testing.T) {
 
 func TestAllActionList(t *testing.T) {
 	expected := [16]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+	for i, val := range expected {
+		expected[i] = val << 26
+	}
 	assert.EqualValues(t, expected, AllActionStates(0))
 }
 
 func TestAllActionListNonzeroState(t *testing.T) {
-	expected := [16]int{0 + (19827491 << 4), 1 + (19827491 << 4), 2 + (19827491 << 4), 3 + (19827491 << 4), 4 + (19827491 << 4), 5 + (19827491 << 4), 6 + (19827491 << 4), 7 + (19827491 << 4), 8 + (19827491 << 4), 9 + (19827491 << 4), 10 + (19827491 << 4), 11 + (19827491 << 4), 12 + (19827491 << 4), 13 + (19827491 << 4), 14 + (19827491 << 4), 15 + (19827491 << 4)}
+	expected := [16]int{(0 << 26) + 19827491, (1 << 26) + 19827491, (2 << 26) + 19827491, (3 << 26) + 19827491, (4 << 26) + 19827491, (5 << 26) + 19827491, (6 << 26) + 19827491, (7 << 26) + 19827491, (8 << 26) + 19827491, (9 << 26) + 19827491, (10 << 26) + 19827491, (11 << 26) + 19827491, (12 << 26) + 19827491, (13 << 26) + 19827491, (14 << 26) + 19827491, (15 << 26) + 19827491}
 	assert.EqualValues(t, expected, AllActionStates(19827491))
 }
