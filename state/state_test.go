@@ -36,6 +36,18 @@ func TestState(t *testing.T) {
 	}
 }
 
+func TestStateInversion(t *testing.T) {
+	for _, test := range entireStateTests {
+		seenCards, high, low, opponent, scoreDelta := FromIndex(test.state)
+
+		assert.EqualValues(t, test.seenCards, seenCards, "State inversion for "+test.msg)
+		assert.EqualValues(t, test.high, high, "State inversion for "+test.msg)
+		assert.EqualValues(t, test.low, low, "State inversion for "+test.msg)
+		assert.EqualValues(t, test.opponent, opponent, "State inversion for "+test.msg)
+		assert.EqualValues(t, test.scoreDelta, scoreDelta, "State inversion for "+test.msg)
+	}
+}
+
 var scoreDeltaTests = []struct{ score, state int }{
 	{0, 0},
 	{3, 3},
