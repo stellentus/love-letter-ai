@@ -37,8 +37,8 @@ func NewSimple(gs rules.Gamestate) Simple {
 		// Get opponent's last played card. (If a Prince was played on the opponent, this will still show the last played card.)
 		simple.OpponentCard = gs.LastPlay[opponent]
 	} else {
-		// else default to Guard
-		simple.OpponentCard = rules.Guard
+		// else default to Princess, since that can't ever actually be the opponent's last card
+		simple.OpponentCard = rules.Princess
 	}
 	simple.ScoreDiff = gs.Discards[gs.ActivePlayer].Score() - gs.Discards[opponent].Score()
 
