@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"time"
 
 	"love-letter-ai/rules"
 	"love-letter-ai/state"
@@ -62,13 +63,13 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 
 	for i := 0; i < Runners; i++ {
 		wg.Add(1)
-		go func() {
+		go func(seed int64) {
 			trs := make([]trainer, len(pls))
 			for i, pl := range pls {
 				trs[i] = trainer{tp: pl}
 			}
 
-			r := rand.New(rand.NewSource(int64(i)))
+			r := rand.New(rand.NewSource(seed))
 			for games := range in {
 				templateSG, err := rules.NewGame(2, r)
 				if err != nil {
@@ -104,7 +105,7 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 				out <- games
 			}
 			wg.Done()
-		}()
+		}(time.Now().UnixNano())
 	}
 
 	epPrintMod := episodes / 100000
