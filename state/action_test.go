@@ -22,94 +22,33 @@ func BenchmarkActionIndex(b *testing.B) {
 	}
 }
 
-func TestZeroActionState(t *testing.T) {
-	seenCards := rules.DefaultDeck()
-	for i := range seenCards {
-		seenCards[i] = 0
-	}
-	recent, old, opponent := rules.Guard, rules.Guard, rules.Guard
-	scoreDelta := 0
-	action := rules.Action{}
-	assert.EqualValues(t, 0, ActionIndex(seenCards, recent, old, opponent, scoreDelta, action))
+var entireStateActionTests = []struct {
+	recent, old, opponent rules.Card
+	scoreDelta            int
+	seenCards             rules.Deck
+	action                rules.Action
+	state                 int
+	msg                   string
+}{
+	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{}, rules.Action{}, 0, "zero state zero action"},
+	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{}, rules.Action{PlayRecent: true, TargetPlayerOffset: 0, SelectedCard: rules.Princess}, 15, "zero state full action"},
+	{rules.Princess, rules.Countess, rules.King, -15, rules.Deck{}, rules.Action{}, 16317 << 4, "full state zero action"},
+	{rules.Princess, rules.Countess, rules.King, -15, rules.Deck{}, rules.Action{PlayRecent: true, TargetPlayerOffset: 0, SelectedCard: rules.Princess}, 15 + (16317 << 4), "simple deck full action"},
+	{rules.Princess, rules.Princess, rules.Princess, -15, rules.DefaultDeck(), rules.Action{PlayRecent: true, TargetPlayerOffset: 0, SelectedCard: rules.Princess}, ActionSpaceMagnitude - 1, "full state full action"},
 }
 
-func TestZeroStateFullAction(t *testing.T) {
-	seenCards := rules.DefaultDeck()
-	for i := range seenCards {
-		seenCards[i] = 0
+func TestActionState(t *testing.T) {
+	for _, test := range entireStateActionTests {
+		assert.EqualValues(t, test.state, ActionIndex(test.seenCards, test.recent, test.old, test.opponent, test.scoreDelta, test.action), "Action state for "+test.msg)
 	}
-	recent, old, opponent := rules.Guard, rules.Guard, rules.Guard
-	scoreDelta := 0
-	action := rules.Action{
-		PlayRecent:         true,
-		TargetPlayerOffset: 0,
-		SelectedCard:       rules.Princess,
-	}
-	assert.EqualValues(t, 15, ActionIndex(seenCards, recent, old, opponent, scoreDelta, action))
 }
 
-func TestZeroStateFullActionToState(t *testing.T) {
-	seenCards := rules.DefaultDeck()
-	for i := range seenCards {
-		seenCards[i] = 0
+func TestActionStateToState(t *testing.T) {
+	for _, test := range entireStateActionTests {
+		actual := IndexWithoutAction(ActionIndex(test.seenCards, test.recent, test.old, test.opponent, test.scoreDelta, test.action))
+		expect := Index(test.seenCards, test.recent, test.old, test.opponent, test.scoreDelta)
+		assert.EqualValues(t, actual, expect, "Action state to state for "+test.msg)
 	}
-	recent, old, opponent := rules.Guard, rules.Guard, rules.Guard
-	scoreDelta := 0
-	action := rules.Action{
-		PlayRecent:         true,
-		TargetPlayerOffset: 0,
-		SelectedCard:       rules.Princess,
-	}
-	actual := IndexWithoutAction(ActionIndex(seenCards, recent, old, opponent, scoreDelta, action))
-	expect := Index(seenCards, recent, old, opponent, scoreDelta)
-	assert.EqualValues(t, actual, expect)
-}
-
-func TestFullStateZeroAction(t *testing.T) {
-	seenCards := rules.DefaultDeck()
-	for i := range seenCards {
-		seenCards[i] = 0
-	}
-	recent, old, opponent := rules.Princess, rules.Countess, rules.King
-	scoreDelta := -15
-	action := rules.Action{}
-	assert.EqualValues(t, 16317<<4, ActionIndex(seenCards, recent, old, opponent, scoreDelta, action))
-}
-
-func TestFullActionStateSimpleDeck(t *testing.T) {
-	recent, old, opponent := rules.Princess, rules.Countess, rules.King
-	scoreDelta := -15
-	action := rules.Action{
-		PlayRecent:         true,
-		TargetPlayerOffset: 0,
-		SelectedCard:       rules.Princess,
-	}
-	assert.EqualValues(t, 15+(16317<<4), ActionIndex(rules.Deck{}, recent, old, opponent, scoreDelta, action))
-}
-
-func TestFullActionStateSimpleDeckToState(t *testing.T) {
-	recent, old, opponent := rules.Princess, rules.Countess, rules.King
-	scoreDelta := -15
-	action := rules.Action{
-		PlayRecent:         true,
-		TargetPlayerOffset: 0,
-		SelectedCard:       rules.Princess,
-	}
-	actual := IndexWithoutAction(ActionIndex(rules.Deck{}, recent, old, opponent, scoreDelta, action))
-	expect := Index(rules.Deck{}, recent, old, opponent, scoreDelta)
-	assert.EqualValues(t, actual, expect)
-}
-
-func TestFullActionState(t *testing.T) {
-	seenCards := rules.DefaultDeck()
-	recent, old, opponent := rules.Princess, rules.Princess, rules.Princess
-	scoreDelta := -15
-	action := rules.Action{
-		PlayRecent:         true,
-		TargetPlayerOffset: 0,
-		SelectedCard:       rules.Princess,
-	}
-	assert.EqualValues(t, ActionSpaceMagnitude-1, ActionIndex(seenCards, recent, old, opponent, scoreDelta, action))
 }
 
 func TestAllActionList(t *testing.T) {
