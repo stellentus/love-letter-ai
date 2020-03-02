@@ -10,19 +10,19 @@ import (
 
 func BenchmarkIndex(b *testing.B) {
 	seenCards := rules.DefaultDeck()
-	high, low, opponent := rules.Priest, rules.Baron, rules.Handmaid
+	recent, old, opponent := rules.Priest, rules.Baron, rules.Handmaid
 	scoreDelta := -8
 	for n := 0; n < b.N; n++ {
-		Index(seenCards, high, low, opponent, scoreDelta)
+		Index(seenCards, recent, old, opponent, scoreDelta)
 	}
 }
 
 var entireStateTests = []struct {
-	high, low, opponent rules.Card
-	scoreDelta          int
-	seenCards           rules.Deck
-	state               int
-	msg                 string
+	recent, old, opponent rules.Card
+	scoreDelta            int
+	seenCards             rules.Deck
+	state                 int
+	msg                   string
 }{
 	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{}, 0, "zero state"},
 	{rules.Guard, rules.Guard, rules.Guard, 0, rules.Deck{rules.Guard: 1}, 1 << (5 + 9), "minimal deck"},
@@ -32,17 +32,17 @@ var entireStateTests = []struct {
 
 func TestState(t *testing.T) {
 	for _, test := range entireStateTests {
-		assert.EqualValues(t, test.state, Index(test.seenCards, test.high, test.low, test.opponent, test.scoreDelta), "State for "+test.msg)
+		assert.EqualValues(t, test.state, Index(test.seenCards, test.recent, test.old, test.opponent, test.scoreDelta), "State for "+test.msg)
 	}
 }
 
 func TestStateInversion(t *testing.T) {
 	for _, test := range entireStateTests {
-		seenCards, high, low, opponent, scoreDelta := FromIndex(test.state)
+		seenCards, recent, old, opponent, scoreDelta := FromIndex(test.state)
 
 		assert.EqualValues(t, test.seenCards, seenCards, "State inversion for "+test.msg)
-		assert.EqualValues(t, test.high, high, "State inversion for "+test.msg)
-		assert.EqualValues(t, test.low, low, "State inversion for "+test.msg)
+		assert.EqualValues(t, test.recent, recent, "State inversion for "+test.msg)
+		assert.EqualValues(t, test.old, old, "State inversion for "+test.msg)
 		assert.EqualValues(t, test.opponent, opponent, "State inversion for "+test.msg)
 		assert.EqualValues(t, test.scoreDelta, scoreDelta, "State inversion for "+test.msg)
 	}
