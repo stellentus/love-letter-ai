@@ -59,21 +59,21 @@ func (card Card) PossibleActions(isRecent bool) []Action {
 		return acts
 	case Prince:
 		return []Action{
-			Action{
+			{
 				PlayRecent:         isRecent,
 				TargetPlayerOffset: 0,
 			},
-			Action{
+			{
 				PlayRecent:         isRecent,
 				TargetPlayerOffset: 1,
 			},
 		}
 	case King:
-		return []Action{Action{
+		return []Action{{
 			PlayRecent:         isRecent,
 			TargetPlayerOffset: 1,
 		}}
 	}
 
-	return []Action{Action{PlayRecent: isRecent}}
+	return []Action{{PlayRecent: isRecent}}
 }

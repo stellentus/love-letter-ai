@@ -91,17 +91,13 @@ func Train(pls []TrainingPlayer, episodes int, epsilon float64) {
 					}
 
 					// Now allow both players to update based on the end of the game.
-					sa, _ := state.NewSimple(sg).AsIndexWithAction(rules.Action{})
-					if sa < 0 {
-						panic(fmt.Sprintf("Negative state was calculated: %d", sa))
-					}
 					if sg.LossWasStupid {
 						// This only happens if the play is something that will ALWAYS lose the game, so incur a huge penalty
-						trs[(sg.Winner+1)%2].updateQ(sg.GameEnded, sa, stupidReward)
-						trs[sg.Winner].updateQ(sg.GameEnded, sa, forfeitWinReward)
+						trs[(sg.Winner+1)%2].updateQ(sg.GameEnded, state.TerminalState, stupidReward)
+						trs[sg.Winner].updateQ(sg.GameEnded, state.TerminalState, forfeitWinReward)
 					} else {
-						trs[(sg.Winner+1)%2].updateQ(sg.GameEnded, sa, lossReward)
-						trs[sg.Winner].updateQ(sg.GameEnded, sa, winReward)
+						trs[(sg.Winner+1)%2].updateQ(sg.GameEnded, state.TerminalState, lossReward)
+						trs[sg.Winner].updateQ(sg.GameEnded, state.TerminalState, winReward)
 					}
 				}
 				out <- games

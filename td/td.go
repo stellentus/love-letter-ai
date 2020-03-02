@@ -26,6 +26,7 @@ func NewTD(alpha, gamma float32) *TD {
 	for i := range sar.qf {
 		sar.qf[i] = 0.5
 	}
+	sar.qf[state.TerminalState] = 0
 	return sar
 }
 
