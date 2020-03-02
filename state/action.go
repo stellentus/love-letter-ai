@@ -27,6 +27,10 @@ func IndexWithoutAction(actionIndex int) int {
 	return actionIndex >> 4
 }
 
+func ActionFromIndex(actionIndex int) int {
+	return actionIndex&0xF
+}
+
 // AllActionStates returns all possible ActionStates for a given state.
 // It does not eliminate actions that are impossible for the given state, so it always returns 16 options.
 func AllActionStates(state int) [16]int {
