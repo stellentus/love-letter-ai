@@ -47,9 +47,9 @@ const (
 	winReward        = 100
 	stupidReward     = lossReward*100
 	forfeitWinReward = winReward      // A win is a win, even if the other player was an idiot. (This isn't very important. Even after 1 million games, this only changes win rates by a few percent. It should be very rare after many plays.)
-	HalfWinReward    = winReward / 25 // Used for optimistic initial weights. Setting this too high (greater than winReward/2) has a small negative impact. Setting to zero is much worse. Between winReward/2 and winReward/100 is ideal.
+	HalfWinReward    = winReward / 2 //I think raising this has long-term benefits. // Used for optimistic initial weights. Setting this too high (greater than winReward/2) has a small negative impact. Setting to zero is much worse. Between winReward/2 and winReward/100 is ideal.
 	noReward         = 0
-	lossReward       = -1 // The penalty for losing is minor since it might not have been the player's fault. This can range from 0 to -100 with good results.
+	lossReward       = noReward // The penalty for losing is minor since it might not have been the player's fault. This can range from 0 to -100 with good results.
 )
 
 var (
